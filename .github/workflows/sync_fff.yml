@@ -1,0 +1,26 @@
+name: Synchronisation FFF vers PythonAnywhere
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Toutes les 2 heures
+  workflow_dispatch:      # Permet de le lancer manuellement en 1 clic
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer les dépendances
+        run: |
+          pip install -r requirements.txt
+          pip install requests beautifulsoup4
+
+      - name: Exécuter la synchronisation FFF vers le Cloud
+        run: python sync_to_cloud.py
