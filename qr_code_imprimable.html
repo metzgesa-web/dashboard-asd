@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr" translate="no" class="notranslate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AS DURLINSDORF - Fiche d'Accès Cloud Smart TV &amp; Administration</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #0B0F17;
+      color: #FFFFFF;
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .toolbar {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .btn-print {
+      background-color: #FFD700;
+      color: #0B0F17;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.35);
+    }
+    .btn-back {
+      color: #FFD700;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      padding: 10px 18px;
+      border-radius: 10px;
+    }
+    .sheet {
+      width: 100%;
+      max-width: 780px;
+      background: linear-gradient(180deg, #111827 0%, #0B0F17 100%);
+      border: 4px solid #FFD700;
+      border-radius: 26px;
+      padding: 26px 28px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+    }
+    .header-badge {
+      display: inline-block;
+      background-color: #FFD700;
+      color: #0B0F17;
+      font-weight: 900;
+      font-size: 12px;
+      padding: 5px 16px;
+      border-radius: 999px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 8px auto;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #FFFFFF;
+    }
+    .subtitle {
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFD700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .pin-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      background-color: #FFD700;
+      color: #0B0F17;
+      padding: 8px 24px;
+      border-radius: 14px;
+      margin: 14px 0;
+    }
+    .pin-label {
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .pin-code {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      font-family: Consolas, Monaco, monospace;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .card {
+      background-color: #0B0F17;
+      border: 2px solid #10B981;
+      border-radius: 20px;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-tv {
+      border-color: #FFD700;
+    }
+    .card-badge {
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .badge-admin {
+      background-color: #10B981;
+      color: #0B0F17;
+    }
+    .badge-tv {
+      background-color: #FFD700;
+      color: #0B0F17;
+    }
+    .qr-box {
+      background-color: #FFFFFF;
+      border: 4px solid #FFD700;
+      border-radius: 18px;
+      padding: 10px;
+      width: 215px;
+      height: 215px;
+      margin: 10px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-box-admin {
+      border-color: #10B981;
+    }
+    .qr-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .url-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #94A3B8;
+      margin-top: 6px;
+    }
+    .url-val {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      font-weight: 900;
+      color: #FFD700;
+      word-break: break-all;
+      margin-top: 4px;
+    }
+    .url-val-green {
+      color: #34D399;
+    }
+    .info-bar {
+      margin-top: 16px;
+      background-color: rgba(255, 215, 0, 0.08);
+      border: 2px solid rgba(255, 215, 0, 0.45);
+      border-radius: 16px;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      color: #E2E8F0;
+      line-height: 1.45;
+    }
+    .footer-note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    @media print {
+      body {
+        background-color: #FFFFFF;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .sheet {
+        box-shadow: none;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar no-print">
+    <a href="/admin" class="btn-back">← Retour à l'Administration</a>
+    <button type="button" onclick="window.print()" class="btn-print">🖨️ Imprimer cette fiche A4</button>
+  </div>
+
+  <div class="sheet">
+    <div class="header-badge">CLUB-HOUSE • DEPUIS 1969 • APPLICATION WEB 100 % CLOUD</div>
+    <img src="data:image/png;base64,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" alt="Blason AS Durlinsdorf" class="logo" />
+    <h1>AS DURLINSDORF - Affichage Dynamique Smart TV</h1>
+    <div class="subtitle">Pilotage par Smartphone (4G / Wi-Fi) &amp; Affichage Direct sur Navigateur TV</div>
+
+    <div class="pin-banner">
+      <span class="pin-label">🔐 Code PIN Administration :</span>
+      <span class="pin-code">1969</span>
+    </div>
+
+    <div class="grid-2">
+      <!-- COLONNE 1 : QR CODE TÉLÉCOMMANDE ADMIN SMARTPHONE -->
+      <div class="card">
+        <div>
+          <span class="card-badge badge-admin">📱 Télécommande Admin (Smartphone)</span>
+          <div style="font-size: 12px; color: #E2E8F0; font-weight: 700;">
+            Scannez ce QR Code avec votre téléphone pour gérer la buvette, les annonces et le mode de la TV
+          </div>
+        </div>
+        <div class="qr-box qr-box-admin">
+          <img src="data:image/png;base64,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" alt="QR Code Administration" />
+        </div>
+        <div style="width: 100%;">
+          <div class="url-label">Lien Administration (/admin)</div>
+          <div class="url-val url-val-green">http://192.168.1.29:5000/admin</div>
+        </div>
+      </div>
+
+      <!-- COLONNE 2 : LIEN & QR CODE AFFICHAGE SMART TV -->
+      <div class="card card-tv">
+        <div>
+          <span class="card-badge badge-tv">📺 Affichage Plein Écran (Smart TV)</span>
+          <div style="font-size: 12px; color: #E2E8F0; font-weight: 700;">
+            Ouvrez cette adresse dans le navigateur internet de la Smart TV ou clé Fire TV / Google TV
+          </div>
+        </div>
+        <div class="qr-box">
+          <img src="data:image/png;base64,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" alt="QR Code Vue TV" />
+        </div>
+        <div style="width: 100%;">
+          <div class="url-label">Lien Direct Smart TV (/tv)</div>
+          <div class="url-val">http://192.168.1.29:5000/tv</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-bar">
+      <strong style="color: #FFD700;">📺 Affichage sur la TV (Sans Raspberry Pi) :</strong>
+      Ouvrez simplement <strong style="color: #FFD700;">http://192.168.1.29:5000/tv</strong> sur le navigateur de la Smart TV (ou via <em>Fully Kiosk Browser</em> / <em>Amazon Silk</em> sur Fire TV Stick). Cliquez sur le bouton <strong>Plein Écran</strong> en haut à droite de la TV.
+      <br />
+      <strong style="color: #34D399;">📱 Télécommande Dirigeants &amp; Bénévoles :</strong> Scannez le QR Code vert ou rendez-vous sur <strong style="color: #34D399;">http://192.168.1.29:5000/admin</strong> (Code PIN : <strong>1969</strong>).
+    </div>
+
+    <div class="footer-note">
+      AS Durlinsdorf (Affiliation FFF #523732) • Tableau de Bord Cloud Smart TV • Généré le 30/10/2026 à 21:16
+    </div>
+  </div>
+</body>
+</html>

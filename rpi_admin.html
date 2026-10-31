@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="fr" translate="no" class="notranslate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
+  <meta http-equiv="Content-Language" content="fr" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Admin Mobile — AS Durlinsdorf (1969)</title>
+  <style>html, body { background-color: #0B0F17; color: #FFFFFF; }</style>
+  <script src="/static/js/tailwind.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/custom.css" />
+</head>
+<body class="bg-[#0B0F17] text-white min-h-screen pb-28 font-sans antialiased selection:bg-[#FFD700] selection:text-[#0B0F17]">
+
+  <!-- ====================================================================
+       TOAST NOTIFICATION MOBILE
+       ==================================================================== -->
+  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col gap-2 w-[92%] max-w-md"></div>
+
+  <!-- ====================================================================
+       ÉCRAN DE VERROUILLAGE PAR CODE PIN (DÉFAUT : 1969)
+       ==================================================================== -->
+  <div id="pin-modal" class="fixed inset-0 z-40 bg-[#0B0F17] flex flex-col items-center justify-center p-6 ">
+    <div class="w-full max-w-sm bg-[#111827] border-2 border-[#FFD700] rounded-3xl p-6 shadow-2xl text-center">
+      <img id="pin-club-logo" src="/static/logo_asd.png?v=1792855829" alt="AS Durlinsdorf" class="w-20 h-20 mx-auto mb-3 object-contain" />
+      <h1 class="text-2xl font-black uppercase tracking-wider text-white" style="font-family: 'Oswald', sans-serif;">
+        AS DURLINSDORF
+      </h1>
+      <p class="text-xs font-bold uppercase tracking-widest text-[#FFD700] mt-0.5">
+        TÉLÉCOMMANDE CLUB-HOUSE • DEPUIS 1969
+      </p>
+
+      <div class="my-5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+          Entrez le code PIN à 4 chiffres
+        </label>
+        <div id="pin-dots" class="flex justify-center gap-4 my-3">
+          <span class="w-4 h-4 rounded-full border-2 border-[#FFD700] transition-all"></span>
+          <span class="w-4 h-4 rounded-full border-2 border-[#FFD700] transition-all"></span>
+          <span class="w-4 h-4 rounded-full border-2 border-[#FFD700] transition-all"></span>
+          <span class="w-4 h-4 rounded-full border-2 border-[#FFD700] transition-all"></span>
+        </div>
+        <p id="pin-error" class="text-xs font-bold text-rose-400 h-4"></p>
+      </div>
+
+      <!-- Pavé numérique tactile -->
+      <div class="grid grid-cols-3 gap-3">
+        <button type="button" onclick="pressPin('1')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">1</button>
+        <button type="button" onclick="pressPin('2')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">2</button>
+        <button type="button" onclick="pressPin('3')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">3</button>
+        <button type="button" onclick="pressPin('4')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">4</button>
+        <button type="button" onclick="pressPin('5')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">5</button>
+        <button type="button" onclick="pressPin('6')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">6</button>
+        <button type="button" onclick="pressPin('7')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">7</button>
+        <button type="button" onclick="pressPin('8')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">8</button>
+        <button type="button" onclick="pressPin('9')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">9</button>
+        <button type="button" onclick="clearPin()" class="h-14 rounded-2xl bg-slate-800 text-xs font-black uppercase tracking-wider text-slate-300">Effacer</button>
+        <button type="button" onclick="pressPin('0')" class="h-14 rounded-2xl bg-[#0B0F17] border border-slate-700 active:bg-[#FFD700] active:text-[#0B0F17] text-2xl font-black transition">0</button>
+        <button type="button" onclick="submitPin()" class="h-14 rounded-2xl bg-[#FFD700] text-[#0B0F17] text-sm font-black uppercase tracking-wider">OK</button>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-4">Code PIN par défaut : <span class="text-slate-300 font-bold">1969</span> (année de fondation)</p>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       EN-TÊTE MOBILE + TÉLÉCOMMANDE TV 1-CLIC
+       ==================================================================== -->
+  <header class="bg-[#111827] border-b-2 border-[#FFD700] px-4 py-3 sticky top-0 z-30 shadow-xl">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <img id="admin-header-logo" src="/static/logo_asd.png?v=1792855829" alt="ASD" class="w-10 h-10 object-contain" />
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-lg tracking-wide uppercase" style="font-family: 'Oswald', sans-serif;">AS DURLINSDORF</span>
+              <span class="px-2 py-0.5 rounded-full bg-[#FFD700] text-[#0B0F17] font-black text-[10px] uppercase">ADMIN TV</span>
+            </div>
+            <p class="text-[11px] text-slate-400">Pilotage en direct • Réseau local Club-House</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="switchTab('tv'); document.getElementById('card-club-logo').scrollIntoView({behavior:'smooth'});" class="px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#FFD700] text-[#FFD700] text-xs font-black uppercase tracking-wider shadow">
+            🛡️ Logo
+          </button>
+          <button type="button" onclick="openQrModal()" class="px-3 py-1.5 rounded-xl bg-[#FFD700] text-[#0B0F17] text-xs font-black uppercase tracking-wider shadow">
+            📱 QR / Partager
+          </button>
+          <a href="/tv" target="_blank" class="px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#FFD700]/50 text-[#FFD700] text-xs font-extrabold uppercase tracking-wider">
+            Voir TV ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- 4 GROS BOUTONS D'ACTION RAPIDE EN 1 CLIC -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button type="button" onclick="setTvMode('competitions')" id="btn-mode-competitions"
+          class="py-3 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-2 transition active:scale-95">
+          <span>🏆</span>
+          <span>Classements</span>
+        </button>
+
+        <button type="button" onclick="setTvMode('buvette')" id="btn-mode-buvette"
+          class="py-3 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-2 transition active:scale-95">
+          <span>🍺</span>
+          <span>Buvette</span>
+        </button>
+
+        <button type="button" onclick="setTvMode('mixed')" id="btn-mode-mixed"
+          class="py-3 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-2 transition active:scale-95">
+          <span>🔄</span>
+          <span>Mode Mixte</span>
+        </button>
+
+        <button type="button" onclick="forceFffSync()" id="btn-sync-fff"
+          class="py-3 px-3 rounded-xl bg-emerald-500/20 border-2 border-emerald-500 text-emerald-300 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 active:scale-95 transition">
+          <span id="sync-icon">⚡</span>
+          <span id="sync-label">Sync FFF</span>
+        </button>
+      </div>
+
+      <!-- BOUTON DE RECHARGEMENT À DISTANCE DE L'ÉCRAN TV (SANS CLAVIER NI SOURIS) -->
+      <div>
+        <button type="button" onclick="forceTvReload()" id="btn-reload-tv"
+          class="w-full py-2.5 px-4 rounded-xl bg-[#0B0F17] border border-[#FFD700]/60 text-[#FFD700] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 active:scale-98 transition hover:bg-[#FFD700]/10">
+          <span>🔄</span>
+          <span>Forcer le rechargement de l'écran TV</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================================================================
+       CONTENU PRINCIPAL PAR ONGLETS
+       ==================================================================== -->
+  <main class="max-w-3xl mx-auto px-4 pt-4 space-y-6">
+
+    <!-- ==================================================================
+         ONGLET 1 : CONTRÔLE TV, ROTATIONS & ÉVÉNEMENT À LA UNE
+         ================================================================== -->
+    <section id="tab-tv" class="tab-panel space-y-5">
+
+      <!-- GESTION DU LOGO DU CLUB (BLASON FFF OU IMPORT PERSONNALISÉ) — EN HAUT DE PAGE -->
+      <div id="card-club-logo" class="bg-[#111827] border-2 border-[#FFD700] rounded-2xl p-4 shadow-lg space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">
+              🛡️ Changer le logo du club
+            </h2>
+            <p class="text-xs text-slate-400">
+              Blason officiel FFF (#523732) par défaut ou importez votre propre image (.png, .jpg, .svg, .webp)
+            </p>
+          </div>
+          <div class="w-14 h-14 rounded-xl bg-[#0B0F17] border border-[#FFD700] p-1.5 flex items-center justify-center shrink-0">
+            <img id="admin-preview-logo" src="/static/logo_asd.png?v=1792855829" alt="Blason ASD" class="w-full h-full object-contain" />
+          </div>
+        </div>
+
+        <form onsubmit="uploadClubLogo(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">
+              Sélectionner un fichier logo (.png, .jpg, .svg, .webp) depuis votre PC ou smartphone
+            </label>
+            <input type="file" id="club-logo-file" accept=".png,.jpg,.jpeg,.svg,.webp,image/*" required
+              class="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#FFD700] file:text-[#0B0F17]" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button type="submit"
+              class="py-3 px-4 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-2">
+              <span>🛡️</span>
+              <span>Changer le logo du club</span>
+            </button>
+            <button type="button" onclick="restoreFffLogo()"
+              class="py-3 px-4 rounded-xl bg-[#0B0F17] border border-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+              <span>🔄</span>
+              <span>Restaurer le blason FFF</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- SÉLECTION RAPIDE DES ÉQUIPES AFFICHÉES SUR LA TV (COCHER / DÉCOCHER) -->
+      <div class="bg-[#111827] border-2 border-[#FFD700]/60 rounded-2xl p-4 shadow-lg space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">
+              ☑️ Équipes affichées à l'écran TV
+            </h2>
+            <p class="text-xs text-slate-400">
+              Cochez ou décochez en 1 clic les équipes officielles FFF (Club #523732 • cl_no 9029)
+            </p>
+          </div>
+          <span id="active-teams-count" class="px-2.5 py-1 rounded-lg bg-[#FFD700] text-[#0B0F17] font-black text-xs"></span>
+        </div>
+        <div id="quick-teams-checklist" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+      </div>
+      
+      <!-- Réglages des durées & QR Code -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-lg space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">⚙️ Réglages d'affichage TV</h2>
+          <span id="last-sync-badge" class="text-[11px] font-semibold text-slate-400"></span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-[#0B0F17] p-3 rounded-xl border border-slate-800">
+            <label class="block text-xs font-bold text-slate-400 mb-1">Rotation entre équipes (sec)</label>
+            <input type="number" id="inp-team-rot" min="5" max="120" class="w-full bg-[#111827] border border-slate-700 rounded-lg px-3 py-2 text-lg font-black text-[#FFD700]" />
+          </div>
+          <div class="bg-[#0B0F17] p-3 rounded-xl border border-slate-800">
+            <label class="block text-xs font-bold text-slate-400 mb-1">Mixte : Durée Classements (sec)</label>
+            <input type="number" id="inp-mixed-comp" min="15" max="600" class="w-full bg-[#111827] border border-slate-700 rounded-lg px-3 py-2 text-lg font-black text-white" />
+          </div>
+          <div class="bg-[#0B0F17] p-3 rounded-xl border border-slate-800">
+            <label class="block text-xs font-bold text-slate-400 mb-1">Mixte : Durée Buvette (sec)</label>
+            <input type="number" id="inp-mixed-buv" min="10" max="600" class="w-full bg-[#111827] border border-slate-700 rounded-lg px-3 py-2 text-lg font-black text-white" />
+          </div>
+        </div>
+
+        <!-- Accès rapide QR Code & Fiche Imprimable (Le QR Code n'est jamais affiché sur la TV) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0B0F17] p-3.5 rounded-xl border border-[#FFD700]/40">
+          <div>
+            <div class="text-sm font-extrabold text-[#FFD700]">📱 Afficher / Partager l'accès Admin</div>
+            <div class="text-xs text-slate-400">Faire scanner sur votre écran, partager sur WhatsApp ou imprimer la fiche bar</div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="openQrModal()" class="px-3.5 py-2 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider">
+              📱 Afficher QR
+            </button>
+            <a href="/admin/print-qr" target="_blank" class="px-3.5 py-2 rounded-xl bg-[#111827] border border-[#FFD700]/60 text-[#FFD700] font-black text-xs uppercase tracking-wider">
+              🖨️ Fiche A4
+            </a>
+          </div>
+        </div>
+
+        <button type="button" onclick="saveTvTimings()" class="w-full py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-sm uppercase tracking-wider shadow-md active:scale-98">
+          Enregistrer les durées d'affichage
+        </button>
+      </div>
+
+      <!-- Éditeur de l'Encart "Événement à la une" -->
+      <div class="bg-[#111827] border border-[#FFD700]/40 rounded-2xl p-4 shadow-lg space-y-3">
+        <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700] border-b border-slate-800 pb-2">
+          🔥 Événement à la une (Encart Droite TV)
+        </h2>
+
+        <form id="form-event" onsubmit="saveFeaturedEvent(event)" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Badge supérieur</label>
+              <input type="text" id="ev-badge" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white" placeholder="ÉVÉNEMENT AU CLUB-HOUSE" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Titre de l'événement</label>
+              <input type="text" id="ev-title" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-sm font-black text-[#FFD700]" placeholder="SOIRÉE TARTES FLAMBÉES" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Date / Horaire / Lieu</label>
+              <input type="text" id="ev-subtitle" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" placeholder="Samedi dès 19h00 • Stade du Grumbach" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Tarif / Info mise en avant</label>
+              <input type="text" id="ev-price" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-[#FFD700]" placeholder="Dès 7,50 € la Flammekueche" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Description</label>
+            <textarea id="ev-desc" rows="2" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Changer l'affiche / image (depuis la galerie du téléphone)</label>
+            <input type="file" id="ev-file" accept="image/*" class="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#FFD700] file:text-[#0B0F17]" />
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-sm uppercase tracking-wider shadow-md">
+            Mettre à jour l'événement sur la TV
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 2 : GESTION DE LA CARTE DE LA BUVETTE
+         ================================================================== -->
+    <section id="tab-buvette" class="tab-panel hidden space-y-5">
+      
+      <!-- Formulaire Ajout / Modification Produit Buvette -->
+      <div class="bg-[#111827] border border-[#FFD700]/40 rounded-2xl p-4 shadow-lg space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 id="buv-form-title" class="text-base font-black uppercase tracking-wider text-[#FFD700]">
+            ➕ Ajouter un article à la Buvette
+          </h2>
+          <button type="button" onclick="resetBuvetteForm()" class="text-xs font-bold text-slate-400 underline">Réinitialiser</button>
+        </div>
+
+        <form onsubmit="saveBuvetteItem(event)" class="space-y-3">
+          <input type="hidden" id="buv-id" value="" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Nom du produit *</label>
+              <input type="text" id="buv-name" required class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white" placeholder="Ex: Bière Pression Meteor" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Catégorie</label>
+              <select id="buv-cat" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white">
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Format (ex: 25cl, 50cl, La paire)</label>
+              <input type="text" id="buv-format" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white" placeholder="25cl" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Prix (€) *</label>
+              <input type="number" step="0.10" min="0" id="buv-price" required class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-base font-black text-[#FFD700]" placeholder="2.50" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-6 pt-1">
+            <label class="flex items-center gap-2 text-sm font-bold cursor-pointer">
+              <input type="checkbox" id="buv-avail" checked class="w-5 h-5 accent-emerald-500 rounded" />
+              <span>En stock (Disponible)</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm font-bold cursor-pointer">
+              <input type="checkbox" id="buv-new" class="w-5 h-5 accent-[#FFD700] rounded" />
+              <span class="text-[#FFD700]">Badge "NOUVEAU"</span>
+            </label>
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-sm uppercase tracking-wider shadow-md">
+            Enregistrer l'article sur la Carte
+          </button>
+        </form>
+      </div>
+
+      <!-- Filtres rapides par catégorie -->
+      <div id="buvette-cat-filters" class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
+
+      <!-- Liste des produits de la buvette avec toggles 1-clic -->
+      <div id="buvette-admin-list" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 3 : GESTION DU BANDEAU DÉFILANT (TICKER)
+         ================================================================== -->
+    <section id="tab-ticker" class="tab-panel hidden space-y-5">
+      
+      <!-- Vitesse de défilement -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-black uppercase tracking-wider text-[#FFD700]">⏱️ Durée d'un cycle de défilement</label>
+          <span id="ticker-speed-val" class="px-3 py-1 rounded-lg bg-[#0B0F17] text-[#FFD700] font-black text-sm">38 sec</span>
+        </div>
+        <input type="range" id="inp-ticker-speed" min="15" max="90" step="1"
+          oninput="document.getElementById('ticker-speed-val').textContent = this.value + ' sec'"
+          onchange="saveTickerSpeed(this.value)"
+          class="w-full accent-[#FFD700] cursor-pointer" />
+        <div class="flex justify-between text-[11px] text-slate-400">
+          <span>Rapide (15s)</span>
+          <span>Normal (38s)</span>
+          <span>Lent (90s)</span>
+        </div>
+      </div>
+
+      <!-- Ajouter une annonce -->
+      <div class="bg-[#111827] border border-[#FFD700]/40 rounded-2xl p-4 shadow-lg space-y-3">
+        <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">📢 Ajouter un message défilant</h2>
+        <form onsubmit="addTickerMessage(event)" class="space-y-3">
+          <textarea id="new-ticker-text" rows="2" required
+            class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white"
+            placeholder="Ex: ⚽ DIMANCHE 15H00 : AS DURLINSDORF 1 REÇOIT RC DANNEMARIE !"></textarea>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-slate-400">Insérer :</span>
+            <button type="button" onclick="insertEmoji('💛🖤 ')" class="px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-slate-700 text-xs">💛🖤</button>
+            <button type="button" onclick="insertEmoji('⚽ ')" class="px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-slate-700 text-xs">⚽</button>
+            <button type="button" onclick="insertEmoji('🍺 ')" class="px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-slate-700 text-xs">🍺</button>
+            <button type="button" onclick="insertEmoji('🔥 ')" class="px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-slate-700 text-xs">🔥</button>
+            <button type="button" onclick="insertEmoji('🏆 ')" class="px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-slate-700 text-xs">🏆</button>
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-sm uppercase tracking-wider">
+            Publier dans la bannière TV
+          </button>
+        </form>
+      </div>
+
+      <!-- Liste des messages défilants -->
+      <div id="ticker-admin-list" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 4 : GESTION DES SPONSORS (AVEC UPLOAD GALERIE SMARTPHONE)
+         ================================================================== -->
+    <section id="tab-sponsors" class="tab-panel hidden space-y-5">
+      
+      <div class="bg-[#111827] border border-[#FFD700]/40 rounded-2xl p-4 shadow-lg space-y-3">
+        <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">🤝 Ajouter un Sponsor / Partenaire</h2>
+        <form id="form-sponsor" onsubmit="saveSponsor(event)" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Nom du Sponsor *</label>
+              <input type="text" id="sp-name" required class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white" placeholder="Ex: Boulangerie du Sundgau" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Slogan / Activité / Ville</label>
+              <input type="text" id="sp-tagline" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white" placeholder="Artisan partenaire • Durlinsdorf" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Logo (depuis la galerie du téléphone)</label>
+              <input type="file" id="sp-file" accept="image/*" class="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#FFD700] file:text-[#0B0F17]" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Durée d'affichage (secondes)</label>
+              <input type="number" id="sp-duration" value="8" min="3" max="60" class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2.5 text-sm font-black text-[#FFD700]" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-sm uppercase tracking-wider">
+            Ajouter au carrousel des sponsors
+          </button>
+        </form>
+      </div>
+
+      <!-- Liste des sponsors -->
+      <div id="sponsors-admin-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 5 : GESTION DES ÉQUIPES FFF & SAISIE MANUELLE DES SCORES
+         ================================================================== -->
+    <section id="tab-teams" class="tab-panel hidden space-y-5">
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">⚽ Équipes FFF AS Durlinsdorf (cl_no 9029 • #523732)</h2>
+          <p class="text-xs text-slate-400">Données officielles API DOFA FFF • Cochez/décochez les équipes à afficher ou corrigez un score.</p>
+        </div>
+        <button type="button" onclick="forceFffSync()" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-[#0B0F17] font-black text-xs uppercase tracking-wider shrink-0">
+          ⚡ Sync FFF
+        </button>
+      </div>
+
+      <!-- Cases à cocher rapides dans l'onglet Équipes également -->
+      <div class="bg-[#111827] border border-[#FFD700]/40 rounded-2xl p-4 space-y-2.5">
+        <div class="text-xs font-black uppercase tracking-wider text-[#FFD700]">
+          ☑️ Sélection des équipes en rotation sur la TV :
+        </div>
+        <div id="teams-tab-checklist" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+      </div>
+
+      <div id="teams-admin-list" class="space-y-4"></div>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 6 : ACCÈS DISTANT 4G/INTERNET, QR CODE & SÉCURITÉ PIN
+         ================================================================== -->
+    <section id="tab-security" class="tab-panel hidden space-y-5">
+
+      <!-- 1. ACCÈS 4G / PARTOUT (INTERNET) + CANAL PERMANENT NTFY.SH -->
+      <div class="bg-[#111827] border-2 border-emerald-500 rounded-2xl p-5 text-center space-y-4 shadow-xl">
+        <div>
+          <span class="px-3 py-1 rounded-full bg-emerald-500 text-[#0B0F17] font-black text-[10px] uppercase tracking-widest">
+            🌐 1. ACCÈS 4G / 5G / PARTOUT SUR INTERNET
+          </span>
+          <h2 class="text-lg font-black uppercase tracking-wider text-white mt-2">
+            📱 Piloter la TV à distance (Hors Club-House)
+          </h2>
+          <p class="text-xs text-slate-300 mt-1">
+            Accédez à l'administration depuis chez vous ou en 4G sans être connecté au Wi-Fi du Club-House :
+          </p>
+        </div>
+
+        <div onclick="openQrModal('remote')" class="w-52 h-52 mx-auto bg-[#FFD700] p-3 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer transition hover:scale-105">
+          <img id="sec-qr-remote-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEICAIAAAAslP2oAAAFAElEQVR4nO3dMY5WNxhA0UyUMj1bYf9VdjBrSJ9+6NF1YWTLdjinRPDPY5grS+/D9sfX5x/AT/48/QBwI2FAEAYEYUAQBgRhQBAGBGFAEAYEYUAQBgRhQBAGBGFAEAaEv2b/wN/fv+14juX+++ff/PXR849+/6zd35/Z51z1PLPfz9vMft+sGBCEAUEYEIQBQRgQhAFBGBCm5xgjq+YAs2bfo6+aA4w+59Q8ZNV8ZvfcY7dVz2/FgCAMCMKAIAwIwoAgDAjCgLBsjjFy23vx2/Zj7J6H3Oa2n4cRKwYEYUAQBgRhQBAGBGFAEAaE7XOM2+w+b+qV86l2z3NeZ8WAIAwIwoAgDAjCgCAMCMKA8NvNMUZO3aex2+zzv/73XcWKAUEYEIQBQRgQhAFBGBCEAWH7HOO299+rzn1aNR9Y9XVnP2fV759128/DiBUDgjAgCAOCMCAIA4IwIAgDwrI5xu5zkHbbPa9YNZcYOfX8I6//PFgxIAgDgjAgCAOCMCAIA4IwIHx8fZ5+hDvcNk9YxTlRv8aKAUEYEIQBQRgQhAFBGBCEAWF6P8Zt9y2cOmfp1D3cI6PnPHU+1e59Hbt/3qwYEIQBQRgQhAFBGBCEAUEYEJ655/u2+yh23zsx+zynnnP3POfUHMmKAUEYEIQBQRgQhAFBGBCEAWH6XKlX7j049f77trnKbedKvXJ+lxUDgjAgCAOCMCAIA4IwIAgDwrL7MXa/n571yvv+297rv/J9282KAUEYEIQBQRgQhAFBGBCEAWHZ/Rgjt51TtMqpfR0jp+YPu/99T93LYcWAIAwIwoAgDAjCgCAMCMKA8Mz9GKveZ8++R999HtQpt+2XuG3eZcWAIAwIwoAgDAjCgCAMCMKAsOxcqZFX3t/fdj7Squd55dyqU88zYsWAIAwIwoAgDAjCgCAMCMKAsP2e71Nzg9fv817l1Dzk1D0nq1gxIAgDgjAgCAOCMCAIA4IwIEyfK3Xq3KRT/4//lFVzA/OWX/scKwYEYUAQBgRhQBAGBGFAEAaEZedK7Z4zzLrtPvJT+xNumw+cmheZY8ACwoAgDAjCgCAMCMKAIAwI0/sx/q/7Fmbf089+zm1zlVPnNZ3a1zHLigFBGBCEAUEYEIQBQRgQhAFh+z3fI7fdj3Hbfd6zXn/+We7HgAOEAUEYEIQBQRgQhAFBGBCO3fM9+/mr9lG8cs/GK+c17XbqnngrBgRhQBAGBGFAEAYEYUAQBoRl93yvMvv5q57n1Lxlt1P3YMx+/qzd8w0rBgRhQBAGBGFAEAYEYUAQBoTn78cYue3e7t3zhNvOlTo1j1rFigFBGBCEAUEYEIQBQRgQhAFh2blSr79HP7UP4dTnn7o/5JX7QKwYEIQBQRgQhAFBGBCEAUEYEKb3Y8x65b31bfsBdu97mZ1vnHqeWc6Vgo2EAUEYEIQBQRgQhAFBGBC2zzFesft+8VmvfN1Vn7+Ke75hI2FAEAYEYUAQBgRhQBAGhN9ujjH7Pv6V+7xvu7dk93lWu8/FsmJAEAYEYUAQBgRhQBAGBGFA2D7HuO28ptv2OYy88r7/1D4N92PAAcKAIAwIwoAgDAjCgCAMCMvmGLftBxg5dU/5bfOE2+ZLu+c29mPAAsKAIAwIwoAgDAjCgCAMCB9fn6cfAe5jxYAgDAjCgCAMCMKAIAwIwoAgDAjCgCAMCMKAIAwIwoAgDAjCgPADNuQtKfyBbgEAAAAASUVORK5CYII=" alt="QR Code 4G Internet" class="w-full h-full object-contain" />
+        </div>
+
+        <div class="bg-[#0B0F17] border border-emerald-500/50 rounded-xl p-3">
+          <div class="flex items-center justify-center gap-2">
+            <span id="tunnel-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Lien HTTPS Public Direct (Cloudflare)</span>
+          </div>
+          <a id="sec-remote-url" href="#" target="_blank"
+            class="block font-mono text-sm sm:text-base font-black text-[#FFD700] underline break-all mt-1">
+            Connexion au tunnel HTTPS en cours...
+          </a>
+        </div>
+
+        <!-- Canal fixe permanent ntfy.sh -->
+        <div class="bg-[#0B0F17] border border-slate-700 rounded-xl p-3.5 text-left space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-black uppercase text-emerald-400">📌 Canal Fixe Permanent (ntfy.sh sans compte)</span>
+            <button type="button" onclick="sendNtfyNotification()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-black text-[10px] uppercase">
+              🔔 Tester Notif
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            À chaque redémarrage électrique du Raspberry Pi, le nouveau lien <code>trycloudflare.com</code> est automatiquement envoyé sur cette adresse fixe :
+          </p>
+          <a id="sec-ntfy-url" href="https://ntfy.sh/asd-durlinsdorf-admin-1969" target="_blank"
+            class="block font-mono text-xs sm:text-sm font-black text-[#FFD700] underline break-all">
+            https://ntfy.sh/asd-durlinsdorf-admin-1969
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <button type="button" onclick="shareAdminAccess()"
+            class="py-3 px-4 rounded-xl bg-emerald-500 text-[#0B0F17] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md">
+            <span>📲</span>
+            <span>Partager Accès 4G (WhatsApp)</span>
+          </button>
+
+          <button type="button" onclick="copyRemoteUrl()"
+            class="py-3 px-4 rounded-xl bg-[#0B0F17] border border-slate-700 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+            <span>📋</span>
+            <span>Copier le lien 4G</span>
+          </button>
+
+          <a href="/admin/print-qr" target="_blank"
+            class="py-3 px-4 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md">
+            <span>🖨️</span>
+            <span>Fiche Imprimable A4 (4G + Wi-Fi)</span>
+          </a>
+
+          <a href="/api/qrcode.png?target=remote&download=1" download="qrcode_4g_internet_as_durlinsdorf.png"
+            class="py-3 px-4 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+            <span>⬇️</span>
+            <span>Télécharger QR PNG (4G)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. ACCÈS WI-FI LOCAL (SECOURS) -->
+      <div class="bg-[#111827] border-2 border-[#FFD700]/70 rounded-2xl p-5 text-center space-y-4 shadow-xl">
+        <div>
+          <span class="px-3 py-1 rounded-full bg-[#FFD700]/20 text-[#FFD700] font-black text-[10px] uppercase tracking-widest">
+            📶 2. ACCÈS WI-FI LOCAL (SECOURS HORS-LIGNE)
+          </span>
+          <h2 class="text-base font-black uppercase tracking-wider text-white mt-2">
+            Réseau Local Wi-Fi du Club-House
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Fonctionne même si la box Internet du Club-House n'a plus de connexion fibre/ADSL :
+          </p>
+        </div>
+
+        <div onclick="openQrModal('local')" class="w-44 h-44 mx-auto bg-[#FFD700] p-2.5 rounded-2xl cursor-pointer transition hover:scale-105">
+          <img id="sec-qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEICAIAAAAslP2oAAAFAElEQVR4nO3dMY5WNxhA0UyUMj1bYf9VdjBrSJ9+6NF1YWTLdjinRPDPY5grS+/D9sfX5x/AT/48/QBwI2FAEAYEYUAQBgRhQBAGBGFAEAYEYUAQBgRhQBAGBGFAEAaEv2b/wN/fv+14juX+++ff/PXR849+/6zd35/Z51z1PLPfz9vMft+sGBCEAUEYEIQBQRgQhAFBGBCm5xgjq+YAs2bfo6+aA4w+59Q8ZNV8ZvfcY7dVz2/FgCAMCMKAIAwIwoAgDAjCgLBsjjFy23vx2/Zj7J6H3Oa2n4cRKwYEYUAQBgRhQBAGBGFAEAaE7XOM2+w+b+qV86l2z3NeZ8WAIAwIwoAgDAjCgCAMCMKA8NvNMUZO3aex2+zzv/73XcWKAUEYEIQBQRgQhAFBGBCEAWH7HOO299+rzn1aNR9Y9XVnP2fV759128/DiBUDgjAgCAOCMCAIA4IwIAgDwrI5xu5zkHbbPa9YNZcYOfX8I6//PFgxIAgDgjAgCAOCMCAIA4IwIHx8fZ5+hDvcNk9YxTlRv8aKAUEYEIQBQRgQhAFBGBCEAWF6P8Zt9y2cOmfp1D3cI6PnPHU+1e59Hbt/3qwYEIQBQRgQhAFBGBCEAUEYEJ655/u2+yh23zsx+zynnnP3POfUHMmKAUEYEIQBQRgQhAFBGBCEAWH6XKlX7j049f77trnKbedKvXJ+lxUDgjAgCAOCMCAIA4IwIAgDwrL7MXa/n571yvv+297rv/J9282KAUEYEIQBQRgQhAFBGBCEAWHZ/Rgjt51TtMqpfR0jp+YPu/99T93LYcWAIAwIwoAgDAjCgCAMCMKA8Mz9GKveZ8++R999HtQpt+2XuG3eZcWAIAwIwoAgDAjCgCAMCMKAsOxcqZFX3t/fdj7Squd55dyqU88zYsWAIAwIwoAgDAjCgCAMCMKAsP2e71Nzg9fv817l1Dzk1D0nq1gxIAgDgjAgCAOCMCAIA4IwIEyfK3Xq3KRT/4//lFVzA/OWX/scKwYEYUAQBgRhQBAGBGFAEAaEZedK7Z4zzLrtPvJT+xNumw+cmheZY8ACwoAgDAjCgCAMCMKAIAwI0/sx/q/7Fmbf089+zm1zlVPnNZ3a1zHLigFBGBCEAUEYEIQBQRgQhAFh+z3fI7fdj3Hbfd6zXn/+We7HgAOEAUEYEIQBQRgQhAFBGBCO3fM9+/mr9lG8cs/GK+c17XbqnngrBgRhQBAGBGFAEAYEYUAQBoRl93yvMvv5q57n1Lxlt1P3YMx+/qzd8w0rBgRhQBAGBGFAEAYEYUAQBoTn78cYue3e7t3zhNvOlTo1j1rFigFBGBCEAUEYEIQBQRgQhAFh2blSr79HP7UP4dTnn7o/5JX7QKwYEIQBQRgQhAFBGBCEAUEYEKb3Y8x65b31bfsBdu97mZ1vnHqeWc6Vgo2EAUEYEIQBQRgQhAFBGBC2zzFesft+8VmvfN1Vn7+Ke75hI2FAEAYEYUAQBgRhQBAGhN9ujjH7Pv6V+7xvu7dk93lWu8/FsmJAEAYEYUAQBgRhQBAGBGFA2D7HuO28ptv2OYy88r7/1D4N92PAAcKAIAwIwoAgDAjCgCAMCMvmGLftBxg5dU/5bfOE2+ZLu+c29mPAAsKAIAwIwoAgDAjCgCAMCB9fn6cfAe5jxYAgDAjCgCAMCMKAIAwIwoAgDAjCgCAMCMKAIAwIwoAgDAjCgPADNuQtKfyBbgEAAAAASUVORK5CYII=" alt="QR Code Wi-Fi Local" class="w-full h-full object-contain" />
+        </div>
+
+        <div class="bg-[#0B0F17] border border-slate-800 rounded-xl p-3">
+          <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Adresse IP Locale Raspberry Pi</div>
+          <div id="sec-admin-url" class="font-mono text-base font-black text-[#FFD700] select-all mt-0.5">http://192.168.1.96:5000/admin</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <button type="button" onclick="openQrModal('local')"
+            class="py-2.5 px-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider">
+            🔍 QR Local Plein Écran
+          </button>
+          <button type="button" onclick="copyAdminUrl()"
+            class="py-2.5 px-3 rounded-xl bg-[#0B0F17] border border-slate-700 text-white font-black text-xs uppercase tracking-wider">
+            📋 Copier IP Locale
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. CONFIGURATION OPTIONNELLE : DOMAINE FIXE / TOKEN CLOUDFLARE OU NGROK -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div>
+          <h2 class="text-base font-black uppercase tracking-wider text-[#FFD700]">
+            ⚙️ Configuration Canal Permanent &amp; Domaine Fixe (Optionnel)
+          </h2>
+          <p class="text-xs text-slate-400">
+            Personnalisez le canal <code>ntfy.sh</code> ou renseignez un Token Cloudflare Tunnel / Ngrok si vous souhaitez un sous-domaine fixe personnalisé.
+          </p>
+        </div>
+
+        <form onsubmit="saveRemoteConfig(event)" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Canal de notification ntfy.sh</label>
+              <input type="text" id="cfg-ntfy-topic"
+                placeholder="asd-durlinsdorf-admin-1969"
+                class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-[#FFD700]" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Domaine fixe personnalisé (optionnel)</label>
+              <input type="text" id="cfg-custom-domain"
+                placeholder="Ex: https://admin.asdurlinsdorf.fr"
+                class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Token Cloudflare Tunnel (optionnel)</label>
+              <input type="password" id="cfg-cf-token"
+                placeholder="Laisser vide pour le Quick Tunnel gratuit"
+                class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Ngrok AuthToken (optionnel)</label>
+              <input type="password" id="cfg-ngrok-token"
+                placeholder="Optionnel"
+                class="w-full bg-[#0B0F17] border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider shadow">
+            Enregistrer la configuration d'accès distant
+          </button>
+        </form>
+      </div>
+
+      <!-- 4. MODIFIER LE CODE PIN + ANTI-BRUTEFORCE -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-black uppercase tracking-wider text-white">🔐 Modifier le Code PIN (4 chiffres)</h2>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px] uppercase">
+            🛡️ Anti-Bruteforce : 5 essais max / 10 min
+          </span>
+        </div>
+        <form onsubmit="changeAdminPin(event)" class="flex gap-3">
+          <input type="text" id="inp-new-pin" maxlength="4" pattern="\d{4}" required
+            placeholder="Nouveau PIN (ex: 1969)"
+            class="flex-1 bg-[#0B0F17] border border-slate-700 rounded-xl px-4 py-3 text-lg font-black text-[#FFD700] tracking-widest text-center" />
+          <button type="submit" class="px-6 py-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider">
+            Enregistrer
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       MODALE PLEIN ÉCRAN POUR FAIRE SCANNER OU PARTAGER LE QR CODE (4G + WI-FI)
+       ==================================================================== -->
+  <div id="qr-fullscreen-modal" class="fixed inset-0 z-50 bg-[#0B0F17]/95 backdrop-blur-md hidden flex-col items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-md bg-[#111827] border-2 border-[#FFD700] rounded-3xl p-5 text-center space-y-3.5 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <span class="px-3 py-1 rounded-full bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-widest">
+          SCANNEZ OU PARTAGEZ L'ACCÈS ADMIN
+        </span>
+        <button type="button" onclick="closeQrModal()" class="w-9 h-9 rounded-full bg-slate-800 text-white font-black text-lg flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <!-- Sélecteur 4G Internet vs Wi-Fi Local -->
+      <div class="grid grid-cols-2 gap-2 bg-[#0B0F17] p-1.5 rounded-2xl border border-slate-800">
+        <button type="button" id="btn-modal-tab-remote" onclick="switchQrModalMode('remote')"
+          class="py-2 rounded-xl font-black text-xs uppercase tracking-wider bg-emerald-500 text-[#0B0F17]">
+          🌐 4G / Internet
+        </button>
+        <button type="button" id="btn-modal-tab-local" onclick="switchQrModalMode('local')"
+          class="py-2 rounded-xl font-black text-xs uppercase tracking-wider text-slate-300">
+          📶 Wi-Fi Local
+        </button>
+      </div>
+
+      <div class="w-60 h-60 mx-auto bg-[#FFD700] p-3 rounded-3xl shadow-[0_0_40px_rgba(255,215,0,0.4)]">
+        <img id="modal-qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEICAIAAAAslP2oAAAFAElEQVR4nO3dMY5WNxhA0UyUMj1bYf9VdjBrSJ9+6NF1YWTLdjinRPDPY5grS+/D9sfX5x/AT/48/QBwI2FAEAYEYUAQBgRhQBAGBGFAEAYEYUAQBgRhQBAGBGFAEAaEv2b/wN/fv+14juX+++ff/PXR849+/6zd35/Z51z1PLPfz9vMft+sGBCEAUEYEIQBQRgQhAFBGBCm5xgjq+YAs2bfo6+aA4w+59Q8ZNV8ZvfcY7dVz2/FgCAMCMKAIAwIwoAgDAjCgLBsjjFy23vx2/Zj7J6H3Oa2n4cRKwYEYUAQBgRhQBAGBGFAEAaE7XOM2+w+b+qV86l2z3NeZ8WAIAwIwoAgDAjCgCAMCMKA8NvNMUZO3aex2+zzv/73XcWKAUEYEIQBQRgQhAFBGBCEAWH7HOO299+rzn1aNR9Y9XVnP2fV759128/DiBUDgjAgCAOCMCAIA4IwIAgDwrI5xu5zkHbbPa9YNZcYOfX8I6//PFgxIAgDgjAgCAOCMCAIA4IwIHx8fZ5+hDvcNk9YxTlRv8aKAUEYEIQBQRgQhAFBGBCEAWF6P8Zt9y2cOmfp1D3cI6PnPHU+1e59Hbt/3qwYEIQBQRgQhAFBGBCEAUEYEJ655/u2+yh23zsx+zynnnP3POfUHMmKAUEYEIQBQRgQhAFBGBCEAWH6XKlX7j049f77trnKbedKvXJ+lxUDgjAgCAOCMCAIA4IwIAgDwrL7MXa/n571yvv+297rv/J9282KAUEYEIQBQRgQhAFBGBCEAWHZ/Rgjt51TtMqpfR0jp+YPu/99T93LYcWAIAwIwoAgDAjCgCAMCMKA8Mz9GKveZ8++R999HtQpt+2XuG3eZcWAIAwIwoAgDAjCgCAMCMKAsOxcqZFX3t/fdj7Squd55dyqU88zYsWAIAwIwoAgDAjCgCAMCMKAsP2e71Nzg9fv817l1Dzk1D0nq1gxIAgDgjAgCAOCMCAIA4IwIEyfK3Xq3KRT/4//lFVzA/OWX/scKwYEYUAQBgRhQBAGBGFAEAaEZedK7Z4zzLrtPvJT+xNumw+cmheZY8ACwoAgDAjCgCAMCMKAIAwI0/sx/q/7Fmbf089+zm1zlVPnNZ3a1zHLigFBGBCEAUEYEIQBQRgQhAFh+z3fI7fdj3Hbfd6zXn/+We7HgAOEAUEYEIQBQRgQhAFBGBCO3fM9+/mr9lG8cs/GK+c17XbqnngrBgRhQBAGBGFAEAYEYUAQBoRl93yvMvv5q57n1Lxlt1P3YMx+/qzd8w0rBgRhQBAGBGFAEAYEYUAQBoTn78cYue3e7t3zhNvOlTo1j1rFigFBGBCEAUEYEIQBQRgQhAFh2blSr79HP7UP4dTnn7o/5JX7QKwYEIQBQRgQhAFBGBCEAUEYEKb3Y8x65b31bfsBdu97mZ1vnHqeWc6Vgo2EAUEYEIQBQRgQhAFBGBC2zzFesft+8VmvfN1Vn7+Ke75hI2FAEAYEYUAQBgRhQBAGhN9ujjH7Pv6V+7xvu7dk93lWu8/FsmJAEAYEYUAQBgRhQBAGBGFA2D7HuO28ptv2OYy88r7/1D4N92PAAcKAIAwIwoAgDAjCgCAMCMvmGLftBxg5dU/5bfOE2+ZLu+c29mPAAsKAIAwIwoAgDAjCgCAMCB9fn6cfAe5jxYAgDAjCgCAMCMKAIAwIwoAgDAjCgCAMCMKAIAwIwoAgDAjCgPADNuQtKfyBbgEAAAAASUVORK5CYII=" alt="QR Code Plein Écran" class="w-full h-full object-contain" />
+      </div>
+
+      <div class="bg-[#0B0F17] border border-slate-800 rounded-2xl p-3 space-y-1">
+        <div id="modal-qr-label" class="text-[11px] font-bold uppercase text-emerald-400">🌐 Accès 4G / Partout (Internet)</div>
+        <div id="modal-qr-url" class="font-mono text-xs sm:text-sm font-black text-[#FFD700] break-all">http://192.168.1.96:5000/admin</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <button type="button" onclick="shareAdminAccess()"
+          class="py-3 px-3 rounded-xl bg-emerald-500 text-[#0B0F17] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5">
+          <span>📲</span>
+          <span>Partager (4G + Wi-Fi)</span>
+        </button>
+        <button type="button" onclick="copyRemoteUrl()"
+          class="py-3 px-3 rounded-xl bg-[#0B0F17] border border-slate-700 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5">
+          <span>📋</span>
+          <span>Copier lien</span>
+        </button>
+        <a href="/admin/print-qr" target="_blank"
+          class="col-span-2 py-3 px-3 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+          <span>🖨️</span>
+          <span>Ouvrir la Fiche Imprimable A4 (4G + Wi-Fi)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       BARRE DE NAVIGATION MOBILE FIXE EN BAS
+       ==================================================================== -->
+  <nav class="fixed bottom-0 inset-x-0 z-30 bg-[#111827]/95 backdrop-blur border-t-2 border-[#FFD700]/50 px-2 py-1.5">
+    <div class="max-w-3xl mx-auto grid grid-cols-6 gap-1">
+      <button type="button" onclick="switchTab('tv')" id="nav-tv" class="nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-[#FFD700] bg-[#0B0F17]">
+        <span class="text-lg">📺</span>
+        <span class="text-[10px] font-black uppercase mt-0.5">TV &amp; Une</span>
+      </button>
+      <button type="button" onclick="switchTab('buvette')" id="nav-buvette" class="nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-slate-400">
+        <span class="text-lg">🍺</span>
+        <span class="text-[10px] font-black uppercase mt-0.5">Buvette</span>
+      </button>
+      <button type="button" onclick="switchTab('ticker')" id="nav-ticker" class="nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-slate-400">
+        <span class="text-lg">📢</span>
+        <span class="text-[10px] font-black uppercase mt-0.5">Annonces</span>
+      </button>
+      <button type="button" onclick="switchTab('sponsors')" id="nav-sponsors" class="nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-slate-400">
+        <span class="text-lg">🤝</span>
+        <span class="text-[10px] font-black uppercase mt-0.5">Sponsors</span>
+      </button>
+      <button type="button" onclick="switchTab('teams')" id="nav-teams" class="nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-slate-400">
+        <span class="text-lg">⚽</span>
+        <span class="text-[10px] font-black uppercase mt-0.5">Équipes</span>
+      </button>
+      <button type="button" onclick="switchTab('security')" id="nav-security" class="nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-slate-400">
+        <span class="text-lg">🔐</span>
+        <span class="text-[10px] font-black uppercase mt-0.5">PIN / QR</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ====================================================================
+       LOGIQUE D'ADMINISTRATION VANILLA JS
+       ==================================================================== -->
+  <script>
+    let appState = {"admin_url": "http://192.168.1.96:5000/admin", "buvette_categories": ["Boissons fra\u00eeches", "Bi\u00e8res \u0026 Vins", "Restauration / Petite faim", "Caf\u00e9 \u0026 Desserts"], "buvette_items": [{"available": true, "category": "Boissons fra\u00eeches", "format": "33cl", "id": "b-1", "is_new": false, "name": "Coca-Cola / Coca-Cola Z\u00e9ro", "price": 2.5}, {"available": true, "category": "Boissons fra\u00eeches", "format": "33cl", "id": "b-2", "is_new": false, "name": "Orangina / Schweppes Agrum\u2019", "price": 2.5}, {"available": true, "category": "Boissons fra\u00eeches", "format": "33cl", "id": "b-3", "is_new": false, "name": "Lipton Ice Tea P\u00eache", "price": 2.5}, {"available": true, "category": "Boissons fra\u00eeches", "format": "50cl", "id": "b-4", "is_new": false, "name": "Eau de Source Lisbeth (Plate / Bulles)", "price": 2.0}, {"available": true, "category": "Boissons fra\u00eeches", "format": "25cl", "id": "b-5", "is_new": true, "name": "Jus de Pomme Artisanal du Sundgau", "price": 2.5}, {"available": true, "category": "Boissons fra\u00eeches", "format": "25cl", "id": "b-6", "is_new": false, "name": "Sirop \u00e0 l\u2019eau (Menthe, Grenadine, Citron)", "price": 1.5}, {"available": true, "category": "Boissons fra\u00eeches", "format": "25cl", "id": "b-7", "is_new": false, "name": "Red Bull Energy Drink", "price": 3.5}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "25cl", "id": "b-8", "is_new": false, "name": "Bi\u00e8re Pression Meteor Pils", "price": 2.5}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "50cl", "id": "b-9", "is_new": false, "name": "Bi\u00e8re Pression Meteor Pils (Demi-Litre)", "price": 4.8}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "25cl", "id": "b-10", "is_new": false, "name": "Picon Bi\u00e8re Pression", "price": 3.0}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "50cl", "id": "b-11", "is_new": false, "name": "Picon Bi\u00e8re Pression (Grand)", "price": 5.5}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "25cl", "id": "b-12", "is_new": true, "name": "Bi\u00e8re de Saison / Wendelinus Pression", "price": 3.2}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "25cl", "id": "b-13", "is_new": false, "name": "Panach\u00e9 / Monaco Pression", "price": 2.5}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "Verre 15cl", "id": "b-14", "is_new": false, "name": "Pinot Blanc ou Pinot Noir d\u2019Alsace AOC", "price": 3.0}, {"available": true, "category": "Bi\u00e8res \u0026 Vins", "format": "Coupe 12cl", "id": "b-15", "is_new": false, "name": "Cr\u00e9mant d\u2019Alsace Brut AOC", "price": 3.5}, {"available": true, "category": "Restauration / Petite faim", "format": "La paire", "id": "b-16", "is_new": false, "name": "Paire de Knacks d\u2019Alsace + Pain", "price": 4.0}, {"available": true, "category": "Restauration / Petite faim", "format": "Baguette", "id": "b-17", "is_new": false, "name": "Sandwich Merguez ou Saucisse Blanche", "price": 4.5}, {"available": true, "category": "Restauration / Petite faim", "format": "Normale", "id": "b-18", "is_new": false, "name": "Tarte Flamb\u00e9e Traditionnelle (Lardons / Oignons)", "price": 7.5}, {"available": true, "category": "Restauration / Petite faim", "format": "Normale", "id": "b-19", "is_new": false, "name": "Tarte Flamb\u00e9e Gratin\u00e9e \u00e0 l\u2019Emmental", "price": 8.5}, {"available": true, "category": "Restauration / Petite faim", "format": "Normale", "id": "b-20", "is_new": true, "name": "Tarte Flamb\u00e9e au Munster Fermier", "price": 9.5}, {"available": true, "category": "Restauration / Petite faim", "format": "Grande", "id": "b-21", "is_new": false, "name": "Barquette de Frites Chaudes", "price": 3.0}, {"available": true, "category": "Restauration / Petite faim", "format": "La pi\u00e8ce", "id": "b-22", "is_new": false, "name": "Bretzel Chaude au Gros Sel", "price": 2.0}, {"available": false, "category": "Restauration / Petite faim", "format": "La pi\u00e8ce", "id": "b-23", "is_new": false, "name": "Croque-Monsieur Fondant", "price": 3.5}, {"available": true, "category": "Caf\u00e9 \u0026 Desserts", "format": "Tasse", "id": "b-24", "is_new": false, "name": "Caf\u00e9 Expresso / Caf\u00e9 Allong\u00e9", "price": 1.5}, {"available": true, "category": "Caf\u00e9 \u0026 Desserts", "format": "Tasse", "id": "b-25", "is_new": false, "name": "Th\u00e9 Noir, Th\u00e9 Vert ou Infusion", "price": 2.0}, {"available": true, "category": "Caf\u00e9 \u0026 Desserts", "format": "La part", "id": "b-26", "is_new": false, "name": "Part de Tarte Maison (Pommes / Quetsches)", "price": 2.5}, {"available": true, "category": "Caf\u00e9 \u0026 Desserts", "format": "Normale", "id": "b-27", "is_new": true, "name": "Tarte Flamb\u00e9e Sucr\u00e9e Pommes-Cannelle", "price": 8.5}, {"available": true, "category": "Caf\u00e9 \u0026 Desserts", "format": "Unit\u00e9", "id": "b-28", "is_new": false, "name": "Barre Chocolat\u00e9e (Mars, Twix, Lion, KitKat)", "price": 1.5}], "club_logo_url": "/static/logo_asd.png?v=1792855829", "featured_event": {"badge": "\u00c9V\u00c9NEMENT AU CLUB-HOUSE", "description": "Venez encourager nos \u00e9quipes et partager nos fameuses Tartes Flamb\u00e9es cuites au feu de bois (Traditionnelle, Gratin\u00e9e, Munster, Pommes-Cannelle) !", "enabled": true, "highlight_price": "D\u00e8s 7,50 \u20ac la Flammekueche", "image_url": "/static/img/event_default.svg", "subtitle": "Samedi soir d\u00e8s 19h00 \u2022 Stade du Grumbach", "title": "SOIR\u00c9E TARTES FLAMB\u00c9ES"}, "hostname_local": "durlinsdorf-tv.local", "local_ip": "192.168.1.96", "mdns_admin_url": "http://durlinsdorf-tv.local:5000/admin", "qr_code_b64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEICAIAAAAslP2oAAAFAElEQVR4nO3dMY5WNxhA0UyUMj1bYf9VdjBrSJ9+6NF1YWTLdjinRPDPY5grS+/D9sfX5x/AT/48/QBwI2FAEAYEYUAQBgRhQBAGBGFAEAYEYUAQBgRhQBAGBGFAEAaEv2b/wN/fv+14juX+++ff/PXR849+/6zd35/Z51z1PLPfz9vMft+sGBCEAUEYEIQBQRgQhAFBGBCm5xgjq+YAs2bfo6+aA4w+59Q8ZNV8ZvfcY7dVz2/FgCAMCMKAIAwIwoAgDAjCgLBsjjFy23vx2/Zj7J6H3Oa2n4cRKwYEYUAQBgRhQBAGBGFAEAaE7XOM2+w+b+qV86l2z3NeZ8WAIAwIwoAgDAjCgCAMCMKA8NvNMUZO3aex2+zzv/73XcWKAUEYEIQBQRgQhAFBGBCEAWH7HOO299+rzn1aNR9Y9XVnP2fV759128/DiBUDgjAgCAOCMCAIA4IwIAgDwrI5xu5zkHbbPa9YNZcYOfX8I6//PFgxIAgDgjAgCAOCMCAIA4IwIHx8fZ5+hDvcNk9YxTlRv8aKAUEYEIQBQRgQhAFBGBCEAWF6P8Zt9y2cOmfp1D3cI6PnPHU+1e59Hbt/3qwYEIQBQRgQhAFBGBCEAUEYEJ655/u2+yh23zsx+zynnnP3POfUHMmKAUEYEIQBQRgQhAFBGBCEAWH6XKlX7j049f77trnKbedKvXJ+lxUDgjAgCAOCMCAIA4IwIAgDwrL7MXa/n571yvv+297rv/J9282KAUEYEIQBQRgQhAFBGBCEAWHZ/Rgjt51TtMqpfR0jp+YPu/99T93LYcWAIAwIwoAgDAjCgCAMCMKA8Mz9GKveZ8++R999HtQpt+2XuG3eZcWAIAwIwoAgDAjCgCAMCMKAsOxcqZFX3t/fdj7Squd55dyqU88zYsWAIAwIwoAgDAjCgCAMCMKAsP2e71Nzg9fv817l1Dzk1D0nq1gxIAgDgjAgCAOCMCAIA4IwIEyfK3Xq3KRT/4//lFVzA/OWX/scKwYEYUAQBgRhQBAGBGFAEAaEZedK7Z4zzLrtPvJT+xNumw+cmheZY8ACwoAgDAjCgCAMCMKAIAwI0/sx/q/7Fmbf089+zm1zlVPnNZ3a1zHLigFBGBCEAUEYEIQBQRgQhAFh+z3fI7fdj3Hbfd6zXn/+We7HgAOEAUEYEIQBQRgQhAFBGBCO3fM9+/mr9lG8cs/GK+c17XbqnngrBgRhQBAGBGFAEAYEYUAQBoRl93yvMvv5q57n1Lxlt1P3YMx+/qzd8w0rBgRhQBAGBGFAEAYEYUAQBoTn78cYue3e7t3zhNvOlTo1j1rFigFBGBCEAUEYEIQBQRgQhAFh2blSr79HP7UP4dTnn7o/5JX7QKwYEIQBQRgQhAFBGBCEAUEYEKb3Y8x65b31bfsBdu97mZ1vnHqeWc6Vgo2EAUEYEIQBQRgQhAFBGBC2zzFesft+8VmvfN1Vn7+Ke75hI2FAEAYEYUAQBgRhQBAGhN9ujjH7Pv6V+7xvu7dk93lWu8/FsmJAEAYEYUAQBgRhQBAGBGFA2D7HuO28ptv2OYy88r7/1D4N92PAAcKAIAwIwoAgDAjCgCAMCMvmGLftBxg5dU/5bfOE2+ZLu+c29mPAAsKAIAwIwoAgDAjCgCAMCB9fn6cfAe5jxYAgDAjCgCAMCMKAIAwIwoAgDAjCgCAMCMKAIAwIwoAgDAjCgPADNuQtKfyBbgEAAAAASUVORK5CYII=", "qr_mdns_b64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEICAIAAAAslP2oAAAE8klEQVR4nO3dMW5cNxRAUctImT5byf6r7EBrcJ9e6YP7CwqkSc6cUxr26EueCwJ84vDj6/MH8D8/dz8AnEgYEIQBQRgQhAFBGBCEAUEYEIQBQRgQhAFBGBCEAUEYEIQB4Y/Rf/Dn33+teI7p/v3nV/75rue/5XlG3f5+eGLFgCAMCMKAIAwIwoAgDAjCgDA8x3gya1981Og++q79+1nP+fQ6o9/X6p/bLe+HJ1YMCMKAIAwIwoAgDAjCgCAMCNPmGE9m7Suv3hff9ZxPX3d0XjFrvrHaLe8HKwYEYUAQBgRhQBAGBGFAEAaE5XOM06yeD6zep1/9PKfNPXaxYkAQBgRhQBAGBGFAEAYEYUB4uznGk9XnGUbnDLd/btXtrBgQhAFBGBCEAUEYEIQBQRgQls8xXnX/e9Z+/+r7Ol71fvHVrBgQhAFBGBCEAUEYEIQBQRgQps0xdu2Lz7L6c5xu//ujbn8/WDEgCAOCMCAIA4IwIAgDgjAgfHx97n6E3+uW+yJOO19xyzmKWawYEIQBQRgQhAFBGBCEAUEYEIbPY6y+P+G0/fvV906Mvs6o085pjBr9Ocx6f1oxIAgDgjAgCAOCMCAIA4IwIEw7j3Hafv/qucGu55z1+qvnTqcxx4AJhAFBGBCEAUEYEIQBQRgQhucYp/1e/qx9+lv2+9/t851GOY8BCwkDgjAgCAOCMCAIA4IwICy/H+O0OcNp5wdOu+/i3c7DPLFiQBAGBGFAEAYEYUAQBgRhQJh2P8Yso69/y/3Wu/b1d92PsevcyKyva8WAIAwIwoAgDAjCgCAMCMKAsPx+jNv3xWc57XzFLedYdr1/rBgQhAFBGBCEAUEYEIQBQRgQpp3HmDVnOO3zjmY57XzF6NedZdfPYZQVA4IwIAgDgjAgCAOCMCAIA8LwHGP1vGLW67zqvGLUrNff9Ty7/n+tGBCEAUEYEIQBQRgQhAFBGBCGP1dq1+/Hn2bXOYfTzmPsmm+snv9YMSAIA4IwIAgDgjAgCAOCMCAMn8d4ctr9GKufZ9fzj1p9HmP1fGbUrO/XigFBGBCEAUEYEIQBQRgQhAFh2j3fT245j+E8yfec9vld5hiwkDAgCAOCMCAIA4IwIAgDwrTzGKNm7aPfbtc5h9PmD6PcjwEbCAOCMCAIA4IwIAgDgjAgTLsfg+/Z9XlTt9h1b7oVA4IwIAgDgjAgCAOCMCAIA8LweYzbz1Gcdk/5rHs2Truf5Mnq+7lnsWJAEAYEYUAQBgRhQBAGBGFAGJ5j3HIeYNe94Kv3+0+bA8x6nl1zlSdWDAjCgCAMCMKAIAwIwoAgDAjT7sc4bR/9yern3HXeY9d8Y9frr/5+rRgQhAFBGBCEAUEYEIQBQRgQlt/zvfq+6lGz5h67zhuMvs7qOcmrsmJAEAYEYUAQBgRhQBAGBGFAWD7HOM1pn3d02udWrb5/45bP+7JiQBAGBGFAEAYEYUAQBgRhQHi7Ocao0f3yXfOHUbd83tSu+9etGBCEAUEYEIQBQRgQhAFBGBCWzzF23ZsxavW5i1vu535y2r0iq1kxIAgDgjAgCAOCMCAIA4IwIHx8fY79g1vuSdj1e/y79vtH7fr5PDltLmTFgCAMCMKAIAwIwoAgDAjCgDA8x4B3YMWAIAwIwoAgDAjCgCAMCMKAIAwIwoAgDAjCgCAMCMKAIAwIwoDwH1oqChKBLe8JAAAAAElFTkSuQmCC", "qr_overlay": {"duration_seconds": 45, "reason": "boot", "trigger_id": 1, "triggered_at": 1792923653.2115536}, "remote_tunnel": {"custom_remote_domain": "", "has_custom_token": false, "last_error": "Command \u0027[\u0027/home/pi/asd-dashboard/bin/cloudflared-linux-arm64\u0027, \u0027tunnel\u0027, \u0027--protocol\u0027, \u0027http2\u0027, \u0027--no-autoupdate\u0027, \u0027--url\u0027, \u0027http://127.0.0.1:5000\u0027]\u0027 timed out after 3 seconds", "ntfy_topic": "asd-durlinsdorf-admin-1969", "ntfy_url": "https://ntfy.sh/asd-durlinsdorf-admin-1969", "public_admin_url": "", "public_base_url": "", "qr_ntfy_b64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEICAIAAAAslP2oAAAE+0lEQVR4nO3dsYpdNxRA0UxI6SJl/v/rUqZI/1ykCmwVAglJ47VKg6+vh7cRvDOSvj6fz2/A//1++gXgRsKAIAwIwoAgDAjCgCAMCMKAIAwIwoAgDAjCgCAMCMKAIAwIf8z+hR9//rXjPZb795+/889Pvf/u9xk9f7fXPw8jVgwIwoAgDAjCgCAMCMKAIAwI03OMkVe+R599z93f0696n9vmIa98HkasGBCEAUEYEIQBQRgQhAFBGBCWzTFGbvt+fWT0nqf2dZz6uc3+HGa98nmwYkAQBgRhQBAGBGFAEAYEYUDYPse4zap5xe75wKr32T2X+K6sGBCEAUEYEIQBQRgQhAFBGBB+uTnGKrvnEqveZ5b5xn+sGBCEAUEYEIQBQRgQhAFBGBC2zzFe+V5897lSp/Z1zD5n5PV7M2ZZMSAIA4IwIAgDgjAgCAOCMCAsm2Psvi9it1PnOJ26j+KV/SGnWDEgCAOCMCAIA4IwIAgDgjAgTM8xXvl9+lmr9lescts8ZOS7fh6sGBCEAUEYEIQBQRgQhAFBGBCm5xjfdf/AyO7zmk65bW4zcurcLSsGBGFAEAYEYUAQBgRhQBAGhK/P53PkHz51XtPIqee8Mp8Zue3/NWKOAQsIA4IwIAgDgjAgCAOCMCBsn2O8sj9h1u7zlFb93E7tZzjFfgzYSBgQhAFBGBCEAUEYEIQBYXqOcep77lX/7qr9Fau8sm9k93N2P98cAxYQBgRhQBAGBGFAEAYEYUC47p7vU+cUnTpnaWTV+9y2j+KVe8etGBCEAUEYEIQBQRgQhAFBGBCuO1dq9/0Su89ZOrVvZNZt91fsZj8GLCAMCMKAIAwIwoAgDAjCgDC9H2Pk1HlNu8+5en0/w23nRK2y+z2tGBCEAUEYEIQBQRgQhAFBGBCWzTFm7T5/6dR+jN1zht3zolfu+d49V7FiQBAGBGFAEAYEYUAQBgRhQNg+x7jtPo3Z55xy2zzklfmG+zFgI2FAEAYEYUAQBgRhQBAGhOn7MU59n33qnorZ95m16nykU/OEV+7xcD8GLCAMCMKAIAwIwoAgDAjCgDC9H+PUPdmzz5916pyr2+YVp+5ln30f92PAAcKAIAwIwoAgDAjCgCAMCM+fK/X6vdQjp+Y5q+Ywu+9Zdz8GHCAMCMKAIAwIwoAgDAjCgDA9x9j9ffms295n1m3nMu3e3zJr9j51+zFgI2FAEAYEYUAQBgRhQBAGhO3nSt32/NvOcdp9/8Mr94rcdl+4FQOCMCAIA4IwIAgDgjAgCAPCsf0Yu+2+12LklfvFb7tX5Lb5khUDgjAgCAOCMCAIA4IwIAgDwrL7MV45l+m23/t//T7s3fdgjOyeF1kxIAgDgjAgCAOCMCAIA4IwIGy/5/u278tPvc8r+1hGdr//7Fxi97lYVgwIwoAgDAjCgCAMCMKAIAwI2+cYt7ltP8bIqXOfTu0PuY0VA4IwIAgDgjAgCAOCMCAIA8IvN8eYtercqlPnO526L/z1/SpWDAjCgCAMCMKAIAwIwoAgDAjb5xiv/P79yO7zrFZ93//6vd0ju+c/I1YMCMKAIAwIwoAgDAjCgCAMCMvmGLf9Pv3I7v0Js8/Z7ZV7RW67R8WKAUEYEIQBQRgQhAFBGBCEAeHr8/mcfge4jhUDgjAgCAOCMCAIA4IwIAgDgjAgCAOCMCAIA4IwIAgDgjAgCAPCT3GTDA9uqTylAAAAAElFTkSuQmCC", "qr_remote_b64": "", "registered": false, "started_at": "25/10/2026 \u00e0 11:20:53", "status": "starting", "trycloudflare_url": ""}, "server_time": "2026-10-25T14:42:29.977031", "settings": {"club_affiliation": "523732", "club_cl_no": 9029, "club_founded": "DEPUIS 1969", "club_name": "AS DURLINSDORF", "display_mode": "competitions", "fff_sync_status": "offline_cache", "has_cloudflare_token": false, "has_ngrok_token": false, "last_fff_sync": "25/10/2026 \u00e0 14:18:53", "mixed_buvette_seconds": 45, "mixed_competitions_seconds": 120, "ntfy_topic": "asd-durlinsdorf-admin-1969", "show_qr_code": true, "sponsor_rotation_seconds": 8, "stadium_name": "Stade du Grumbach \u2022 68480 Durlinsdorf", "team_rotation_seconds": 15, "ticker_speed_seconds": 77, "weather_city": "Durlinsdorf (68)", "weather_lat": 47.486, "weather_lon": 7.241}, "sponsors": [{"active": true, "duration_seconds": 8, "id": "sp-1", "logo_url": "/static/uploads/sponsors/sponsor_credit_mutuel.svg", "name": "Cr\u00e9dit Mutuel Haut-Sundgau", "tagline": "Partenaire Majeur \u2022 Ferrette \u0026 Altkirch"}, {"active": true, "duration_seconds": 8, "id": "sp-2", "logo_url": "/static/uploads/sponsors/sponsor_brasserie_meteor.svg", "name": "Brasserie Meteor Alsace", "tagline": "Brasseur Ind\u00e9pendant depuis 1640 \u2022 Buvette ASD"}, {"active": true, "duration_seconds": 8, "id": "sp-3", "logo_url": "/static/uploads/sponsors/sponsor_garage_grumbach.svg", "name": "Garage du Grumbach", "tagline": "Entretien, M\u00e9canique \u0026 Carrosserie \u2022 Secteur Durlinsdorf"}, {"active": true, "duration_seconds": 8, "id": "sp-4", "logo_url": "/static/uploads/sponsors/sponsor_boulangerie_sundgau.svg", "name": "Boulangerie Artisanale du Sundgau", "tagline": "Pains paysans, Bretzels chaudes \u0026 P\u00e2tisseries"}, {"active": true, "duration_seconds": 8, "id": "sp-5", "logo_url": "/static/uploads/sponsors/sponsor_mairie_durlinsdorf.svg", "name": "Commune de Durlinsdorf", "tagline": "Soutien institutionnel \u0026 Infrastructures du Stade"}], "teams": [{"active": true, "category": "Senior Libre", "category_code": "SEM", "cl_no": 9029, "competition": "District 1 Alsace - POULE F", "fff_cp_no": "450652", "fff_ph_no": "1", "fff_po_no": "6", "fff_url": "https://epreuves.fff.fr/competition/engagement/450652/phase/1/poule/6/classement", "form": ["N", "V", "D", "N", "V"], "id": "sem-1", "last_match": {"away_score": 6, "away_team": "AS Durlinsdorf", "competition": "Coupe Cr\u00e9dit Mutuel Sundgau \u2022 Unique", "date": "11/10/2026", "home_score": 0, "home_team": "WITTERSDORF A.S.", "ma_no": 79800104, "note": "", "opponent": "WITTERSDORF A.S.", "time": "15:00", "venue": "Ext\u00e9rieur"}, "last_synced_at": "24/10/2026 21:48", "manual_override": false, "name": "Seniors 1 \u2014 District 1 Alsace", "next_match": {"away_score": null, "away_team": "DANNEMARIE UFPA", "competition": "District 1 Alsace \u2022 POULE F", "date": "25/10/2026", "home_score": null, "home_team": "AS Durlinsdorf", "ma_no": 56261856, "note": "", "opponent": "DANNEMARIE UFPA", "time": "15:00", "venue": "Domicile"}, "short_name": "SENIORS 1", "standings": [{"club": "PAYS RHENAN F.C 2", "diff": 4, "drawn": 0, "ga": 7, "gf": 11, "is_asd": false, "lost": 2, "played": 5, "pos": 1, "pts": 9, "won": 3}, {"club": "HAGENBACH EHB2016", "diff": 8, "drawn": 0, "ga": 4, "gf": 12, "is_asd": false, "lost": 0, "played": 3, "pos": 2, "pts": 9, "won": 3}, {"club": "MULHOUSE MOULOUDIA", "diff": 2, "drawn": 0, "ga": 8, "gf": 10, "is_asd": false, "lost": 2, "played": 5, "pos": 3, "pts": 9, "won": 3}, {"club": "LUTTERBACH A.S.", "diff": 3, "drawn": 2, "ga": 7, "gf": 10, "is_asd": false, "lost": 0, "played": 4, "pos": 4, "pts": 8, "won": 2}, {"club": "ZILLISHEIM S.S", "diff": 2, "drawn": 1, "ga": 4, "gf": 6, "is_asd": false, "lost": 1, "played": 4, "pos": 5, "pts": 7, "won": 2}, {"club": "UFFHEIM F.C.", "diff": 2, "drawn": 1, "ga": 4, "gf": 6, "is_asd": false, "lost": 1, "played": 4, "pos": 6, "pts": 7, "won": 2}, {"club": "RIEDISHEIM F.C.", "diff": 2, "drawn": 0, "ga": 7, "gf": 9, "is_asd": false, "lost": 3, "played": 5, "pos": 7, "pts": 5, "won": 2}, {"club": "DURLINSDORF A.S", "diff": 0, "drawn": 1, "ga": 5, "gf": 5, "is_asd": true, "lost": 1, "played": 3, "pos": 8, "pts": 4, "won": 1}, {"club": "BURNHAUPTOIS STADE 2", "diff": 2, "drawn": 1, "ga": 9, "gf": 7, "is_asd": false, "lost": 3, "played": 5, "pos": 9, "pts": 4, "won": 1}, {"club": "BRUNSTATT F.C.", "diff": 7, "drawn": 1, "ga": 15, "gf": 8, "is_asd": false, "lost": 2, "played": 4, "pos": 10, "pts": 4, "won": 1}, {"club": "HUNINGUE A.S 2", "diff": 6, "drawn": 1, "ga": 13, "gf": 7, "is_asd": false, "lost": 3, "played": 5, "pos": 11, "pts": 3, "won": 1}, {"club": "DANNEMARIE UFPA", "diff": 8, "drawn": 0, "ga": 16, "gf": 8, "is_asd": false, "lost": 4, "played": 5, "pos": 12, "pts": 2, "won": 1}], "team_code": 1, "team_number": 1}, {"active": true, "category": "Senior Libre", "category_code": "SEM", "cl_no": 9029, "competition": "District 4 Alsace - POULE I", "fff_cp_no": "450672", "fff_ph_no": "1", "fff_po_no": "9", "fff_url": "https://epreuves.fff.fr/competition/engagement/450672/phase/1/poule/9/classement", "form": ["D", "D", "V", "V", "V"], "id": "sem-2", "last_match": {"away_score": 4, "away_team": "AS Durlinsdorf 2", "competition": "District 4 Alsace \u2022 POULE I", "date": "17/10/2026", "home_score": 2, "home_team": "HEGENHEIM F.C 2", "ma_no": 56179422, "note": "", "opponent": "HEGENHEIM F.C 2", "time": "19:30", "venue": "Ext\u00e9rieur"}, "last_synced_at": "24/10/2026 21:48", "manual_override": false, "name": "Seniors 2 \u2014 District 4 Alsace", "next_match": {"away_score": null, "away_team": "AS Durlinsdorf 2", "competition": "District 4 Alsace \u2022 POULE I", "date": "01/11/2026", "home_score": null, "home_team": "STEINBRUNN F.C. 2", "ma_no": 56179435, "note": "", "opponent": "STEINBRUNN F.C. 2", "time": "10:00", "venue": "Ext\u00e9rieur"}, "short_name": "SENIORS 2", "standings": [{"club": "HAGENTHAL F.C 2", "diff": 8, "drawn": 0, "ga": 9, "gf": 17, "is_asd": false, "lost": 1, "played": 5, "pos": 1, "pts": 12, "won": 4}, {"club": "HUNINGUE A.S 3", "diff": 4, "drawn": 0, "ga": 6, "gf": 10, "is_asd": false, "lost": 2, "played": 6, "pos": 2, "pts": 12, "won": 4}, {"club": "UFFHEIM F.C. 2", "diff": 11, "drawn": 1, "ga": 4, "gf": 15, "is_asd": false, "lost": 0, "played": 4, "pos": 3, "pts": 10, "won": 3}, {"club": "DURLINSDORF A.S 2", "diff": 2, "drawn": 0, "ga": 7, "gf": 9, "is_asd": true, "lost": 2, "played": 5, "pos": 4, "pts": 9, "won": 3}, {"club": "ROSENAU F.C.", "diff": 5, "drawn": 0, "ga": 11, "gf": 16, "is_asd": false, "lost": 2, "played": 5, "pos": 5, "pts": 9, "won": 3}, {"club": "ILLFURTH F.C. 2", "diff": 1, "drawn": 0, "ga": 9, "gf": 8, "is_asd": false, "lost": 2, "played": 5, "pos": 6, "pts": 8, "won": 3}, {"club": "HEGENHEIM F.C 2", "diff": 2, "drawn": 0, "ga": 11, "gf": 9, "is_asd": false, "lost": 2, "played": 4, "pos": 7, "pts": 6, "won": 2}, {"club": "ZIMMER-ESCHEN.US", "diff": 3, "drawn": 0, "ga": 10, "gf": 7, "is_asd": false, "lost": 2, "played": 4, "pos": 8, "pts": 6, "won": 2}, {"club": "STEINBRUNN F.C. 2", "diff": 3, "drawn": 1, "ga": 7, "gf": 4, "is_asd": false, "lost": 3, "played": 5, "pos": 9, "pts": 4, "won": 1}, {"club": "BLOTZHEIM A.S 3", "diff": 6, "drawn": 0, "ga": 15, "gf": 9, "is_asd": false, "lost": 4, "played": 5, "pos": 10, "pts": 3, "won": 1}, {"club": "MULHOUSE MOULOUDIA 2", "diff": 8, "drawn": 0, "ga": 15, "gf": 7, "is_asd": false, "lost": 3, "played": 4, "pos": 11, "pts": 3, "won": 1}, {"club": "PAYS RHENAN F.C 3", "diff": 7, "drawn": 0, "ga": 9, "gf": 2, "is_asd": false, "lost": 4, "played": 4, "pos": 12, "pts": -1, "won": 0}], "team_code": 2, "team_number": 2}, {"active": true, "category": "Senior Libre", "category_code": "SEM", "cl_no": 9029, "competition": "District 6 Alsace - POULE H", "fff_cp_no": "450654", "fff_ph_no": "1", "fff_po_no": "8", "fff_url": "https://epreuves.fff.fr/competition/engagement/450654/phase/1/poule/8/classement", "form": ["D", "V", "V", "D", "V"], "id": "sem-3", "last_match": {"away_score": 2, "away_team": "BETTEND. ENT. EGB 2", "competition": "District 6 Alsace \u2022 POULE H", "date": "16/10/2026", "home_score": 6, "home_team": "AS Durlinsdorf 3", "ma_no": 56182625, "note": "", "opponent": "BETTEND. ENT. EGB 2", "time": "20:00", "venue": "Domicile"}, "last_synced_at": "24/10/2026 21:48", "manual_override": false, "name": "Seniors 3 \u2014 District 6 Alsace", "next_match": {"away_score": null, "away_team": "AS Durlinsdorf 3", "competition": "District 6 Alsace \u2022 POULE H", "date": "25/10/2026", "home_score": null, "home_team": "HELFRANTZKIRCH A.S 2", "ma_no": 56182630, "note": "", "opponent": "HELFRANTZKIRCH A.S 2", "time": "10:00", "venue": "Ext\u00e9rieur"}, "short_name": "SENIORS 3", "standings": [{"club": "HELFRANTZKIRCH A.S 2", "diff": 6, "drawn": 0, "ga": 6, "gf": 12, "is_asd": false, "lost": 1, "played": 5, "pos": 1, "pts": 12, "won": 4}, {"club": "SCHLIERBACH A.S. 2", "diff": 5, "drawn": 0, "ga": 7, "gf": 12, "is_asd": false, "lost": 2, "played": 5, "pos": 2, "pts": 9, "won": 3}, {"club": "DANNEMARIE UFPA 4", "diff": 4, "drawn": 0, "ga": 6, "gf": 10, "is_asd": false, "lost": 2, "played": 5, "pos": 3, "pts": 9, "won": 3}, {"club": "HABSHEIM F.C 3", "diff": 4, "drawn": 2, "ga": 6, "gf": 10, "is_asd": false, "lost": 0, "played": 4, "pos": 4, "pts": 8, "won": 2}, {"club": "DURLINSDORF A.S 3", "diff": 7, "drawn": 0, "ga": 11, "gf": 18, "is_asd": true, "lost": 1, "played": 5, "pos": 5, "pts": 8, "won": 3}, {"club": "ILLFURTH F.C. 3", "diff": 6, "drawn": 1, "ga": 13, "gf": 19, "is_asd": false, "lost": 2, "played": 5, "pos": 6, "pts": 7, "won": 2}, {"club": "RIESPACH A.S. 2", "diff": 2, "drawn": 1, "ga": 9, "gf": 7, "is_asd": false, "lost": 1, "played": 4, "pos": 7, "pts": 7, "won": 2}, {"club": "BRUNSTATT F.C. 3", "diff": 2, "drawn": 2, "ga": 8, "gf": 6, "is_asd": false, "lost": 1, "played": 4, "pos": 8, "pts": 5, "won": 1}, {"club": "MULHOUSE COTEAUX A.S 3", "diff": 5, "drawn": 1, "ga": 15, "gf": 10, "is_asd": false, "lost": 2, "played": 5, "pos": 9, "pts": 3, "won": 1}, {"club": "BETTEND. ENT. EGB 2", "diff": 11, "drawn": 0, "ga": 19, "gf": 8, "is_asd": false, "lost": 3, "played": 4, "pos": 10, "pts": 3, "won": 1}, {"club": "CARSPACH U.C.S. 3", "diff": 5, "drawn": 1, "ga": 14, "gf": 9, "is_asd": false, "lost": 3, "played": 5, "pos": 11, "pts": 3, "won": 1}, {"club": "BLOTZHEIM A.S 4", "diff": 7, "drawn": 0, "ga": 17, "gf": 10, "is_asd": false, "lost": 4, "played": 5, "pos": 12, "pts": 3, "won": 1}], "team_code": 3, "team_number": 3}, {"active": true, "category": "U13 - U12 Libre", "category_code": "U13", "cl_no": 9029, "competition": "U13 D3 Alsace SUD - POULE P", "fff_cp_no": "450562", "fff_ph_no": "1", "fff_po_no": "16", "fff_url": "https://epreuves.fff.fr/competition/engagement/450562/phase/1/poule/16/classement", "form": ["V", "D", "V", "D", "V"], "id": "u13-1", "last_match": {"away_score": 0, "away_team": "SUNDGAU FOOT 2", "competition": "U13 D3 Alsace SUD \u2022 POULE P", "date": "17/10/2026", "home_score": 2, "home_team": "AS Durlinsdorf", "ma_no": 56462001, "note": "", "opponent": "SUNDGAU FOOT 2", "time": "14:30", "venue": "Domicile"}, "last_synced_at": "24/10/2026 21:48", "manual_override": false, "name": "U13 (1) \u2014 U13 D3 Alsace SUD", "next_match": {"away_score": null, "away_team": "ALSASUD 3", "competition": "U13 D3 Alsace SUD \u2022 POULE P", "date": "31/10/2026", "home_score": null, "home_team": "AS Durlinsdorf", "ma_no": 56461998, "note": "", "opponent": "ALSASUD 3", "time": "14:30", "venue": "Domicile"}, "short_name": "U13 1", "standings": [{"club": "ALSASUD 3", "diff": 12, "drawn": 0, "ga": 6, "gf": 18, "is_asd": false, "lost": 0, "played": 3, "pos": 1, "pts": 9, "won": 3}, {"club": "DURLINSDORF EPSUD 1", "diff": 5, "drawn": 0, "ga": 6, "gf": 11, "is_asd": true, "lost": 1, "played": 4, "pos": 2, "pts": 9, "won": 3}, {"club": "CENTRE SUNDGAU EJ 2", "diff": 3, "drawn": 1, "ga": 14, "gf": 11, "is_asd": false, "lost": 2, "played": 4, "pos": 3, "pts": 4, "won": 1}, {"club": "STEINBRUNN F.C. 1", "diff": 7, "drawn": 1, "ga": 16, "gf": 9, "is_asd": false, "lost": 2, "played": 4, "pos": 4, "pts": 4, "won": 1}, {"club": "SUNDGAU FOOT 2", "diff": 7, "drawn": 0, "ga": 17, "gf": 10, "is_asd": false, "lost": 4, "played": 5, "pos": 5, "pts": 3, "won": 1}], "team_code": 1, "team_number": 5}, {"active": true, "category": "U13 - U12 Libre", "category_code": "U13", "cl_no": 9029, "competition": "U13 D4 Alsace - POULE Q", "fff_cp_no": "450564", "fff_ph_no": "1", "fff_po_no": "17", "fff_url": "https://epreuves.fff.fr/competition/engagement/450564/phase/1/poule/17/classement", "form": ["N", "V", "D", "V", "V"], "id": "u13-2", "last_match": {"away_score": 6, "away_team": "AS Durlinsdorf 2", "competition": "U13 D4 Alsace \u2022 POULE Q", "date": "24/10/2026", "home_score": 4, "home_team": "ALSASUD 4", "ma_no": 56462546, "note": "", "opponent": "ALSASUD 4", "time": "14:30", "venue": "Ext\u00e9rieur"}, "last_synced_at": "24/10/2026 21:48", "manual_override": false, "name": "U13 (2) \u2014 U13 D4 Alsace", "next_match": {"away_score": null, "away_team": "HUNINGUE A.S 3", "competition": "U13 D4 Alsace \u2022 POULE Q", "date": "07/11/2026", "home_score": null, "home_team": "AS Durlinsdorf 2", "ma_no": 56462549, "note": "", "opponent": "HUNINGUE A.S 3", "time": "14:30", "venue": "Domicile"}, "short_name": "U13 2", "standings": [{"club": "PAYS RHENAN F.C 3", "diff": 54, "drawn": 0, "ga": 8, "gf": 62, "is_asd": false, "lost": 0, "played": 6, "pos": 1, "pts": 18, "won": 6}, {"club": "MULHOUSE FR AZZURRI 6", "diff": 11, "drawn": 0, "ga": 31, "gf": 42, "is_asd": false, "lost": 2, "played": 6, "pos": 2, "pts": 12, "won": 4}, {"club": "DURLINSDORF EPSUD 2", "diff": 11, "drawn": 1, "ga": 42, "gf": 31, "is_asd": true, "lost": 2, "played": 6, "pos": 3, "pts": 10, "won": 3}, {"club": "HABSHEIM FC 3", "diff": 2, "drawn": 0, "ga": 35, "gf": 37, "is_asd": false, "lost": 4, "played": 6, "pos": 4, "pts": 6, "won": 2}, {"club": "ALSASUD 4", "diff": 17, "drawn": 1, "ga": 39, "gf": 22, "is_asd": false, "lost": 4, "played": 6, "pos": 5, "pts": 4, "won": 1}, {"club": "HUNINGUE A.S 3", "diff": 39, "drawn": 0, "ga": 52, "gf": 13, "is_asd": false, "lost": 5, "played": 6, "pos": 6, "pts": 3, "won": 1}], "team_code": 2, "team_number": 6}, {"active": true, "category": "U13 - U12 Libre", "category_code": "U13", "cl_no": 9029, "competition": "U13 D4 Alsace - POULE P", "fff_cp_no": "450564", "fff_ph_no": "1", "fff_po_no": "16", "fff_url": "https://epreuves.fff.fr/competition/engagement/450564/phase/1/poule/16/classement", "form": ["D", "D", "D", "D", "D"], "id": "u13-3", "last_match": {"away_score": 9, "away_team": "LUEMSCHWILLER A.S.", "competition": "U13 D4 Alsace \u2022 POULE P", "date": "24/10/2026", "home_score": 5, "home_team": "AS Durlinsdorf 3", "ma_no": 56462505, "note": "", "opponent": "LUEMSCHWILLER A.S.", "time": "14:30", "venue": "Domicile"}, "last_synced_at": "24/10/2026 21:48", "manual_override": false, "name": "U13 (3) \u2014 U13 D4 Alsace", "next_match": {"away_score": null, "away_team": "ENTENTE DE LA VALL\u00c9E 3", "competition": "U13 D4 Alsace \u2022 POULE P", "date": "04/11/2026", "home_score": null, "home_team": "AS Durlinsdorf 3", "ma_no": 56462515, "note": "", "opponent": "ENTENTE DE LA VALL\u00c9E 3", "time": "18:30", "venue": "Domicile"}, "short_name": "U13 3", "standings": [{"club": "SUNDGAU FOOT 3", "diff": 24, "drawn": 1, "ga": 17, "gf": 41, "is_asd": false, "lost": 0, "played": 6, "pos": 1, "pts": 16, "won": 5}, {"club": "MULHOUSE FR AZZURRI 4", "diff": 4, "drawn": 0, "ga": 20, "gf": 24, "is_asd": false, "lost": 1, "played": 5, "pos": 2, "pts": 12, "won": 4}, {"club": "LUEMSCHWILLER A.S. 1", "diff": 8, "drawn": 2, "ga": 24, "gf": 32, "is_asd": false, "lost": 2, "played": 6, "pos": 3, "pts": 8, "won": 2}, {"club": "ENTENTE DE LA VALL\u00c9E 3", "diff": 1, "drawn": 1, "ga": 14, "gf": 13, "is_asd": false, "lost": 2, "played": 5, "pos": 4, "pts": 7, "won": 2}, {"club": "GR.E.P.A 2", "diff": 15, "drawn": 1, "ga": 29, "gf": 14, "is_asd": false, "lost": 4, "played": 5, "pos": 5, "pts": 1, "won": 0}, {"club": "DURLINSDORF EPSUD 3", "diff": 20, "drawn": 1, "ga": 36, "gf": 16, "is_asd": true, "lost": 4, "played": 5, "pos": 6, "pts": 1, "won": 0}], "team_code": 3, "team_number": 7}], "ticker_messages": [{"active": true, "id": "msg-1", "text": "\ud83d\udc9b\ud83d\udda4 BIENVENUE AU STADE DU GRUMBACH \u2014 CLUB-HOUSE DE L\u2019AS DURLINSDORF (FOND\u00c9 EN 1969) !"}, {"active": true, "id": "msg-2", "text": "\u26bd DIMANCHE 25/10 \u00c0 15H00 : DERBY EN DISTRICT 1 \u2014 AS DURLINSDORF 1 RE\u00c7OIT LE RC DANNEMARIE 1 ! TOUS EN JAUNE \u0026 NOIR !"}, {"active": true, "id": "msg-3", "text": "\ud83d\udd25 SAMEDI SOIR D\u00c8S 19H00 : MATCH SENIORS 2 CONTRE US ZIMMERSHEIM SUIVI DE NOTRE SOIR\u00c9E TARTES FLAMB\u00c9ES AU CLUB-HOUSE !"}, {"active": true, "id": "msg-4", "text": "\ud83c\udf7a NOUVEAUT\u00c9 \u00c0 LA BUVETTE : D\u00c9COUVREZ NOTRE BI\u00c8RE DE SAISON PRESSION ET NOS FLAMMEKUECHE AU MUNSTER !"}, {"active": true, "id": "msg-5", "text": "\ud83d\ude4f L\u2019AS DURLINSDORF REMERCIE CHALEUREUSEMENT SES SPONSORS, B\u00c9N\u00c9VOLES, ARBITRES ET SUPPORTERS FID\u00c8LES DU SUNDGAU !"}], "tv_reload_id": 0, "version": 1792934333734};
+    let enteredPin = '';
+    let activePinToken = sessionStorage.getItem('asd_admin_pin') || '';
+    let selectedBuvetteCategory = 'ALL';
+
+    // ----------------------------------------------------------------------
+    // 1. GESTION DU CODE PIN (1969 PAR DÉFAUT)
+    // ----------------------------------------------------------------------
+    function pressPin(digit) {
+      if (enteredPin.length >= 4) return;
+      enteredPin += digit;
+      updatePinDots();
+      if (enteredPin.length === 4) {
+        submitPin();
+      }
+    }
+
+    function clearPin() {
+      enteredPin = '';
+      document.getElementById('pin-error').textContent = '';
+      updatePinDots();
+    }
+
+    function updatePinDots() {
+      const dots = document.querySelectorAll('#pin-dots span');
+      dots.forEach((dot, idx) => {
+        if (idx < enteredPin.length) {
+          dot.classList.add('bg-[#FFD700]', 'scale-110');
+        } else {
+          dot.classList.remove('bg-[#FFD700]', 'scale-110');
+        }
+      });
+    }
+
+    async function submitPin() {
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: enteredPin })
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          activePinToken = enteredPin;
+          sessionStorage.setItem('asd_admin_pin', activePinToken);
+          document.getElementById('pin-modal').classList.add('hidden');
+          if (data.state) {
+            appState = data.state;
+            renderAdminAll();
+          }
+          showToast('🔓 Connecté à l’administration ASD');
+        } else {
+          document.getElementById('pin-error').textContent = data.error || 'Code PIN incorrect';
+          enteredPin = '';
+          updatePinDots();
+        }
+      } catch (e) {
+        document.getElementById('pin-error').textContent = 'Erreur réseau';
+      }
+    }
+
+    async function apiCall(url, options = {}) {
+      const headers = options.headers || {};
+      if (activePinToken) {
+        headers['X-Admin-Pin'] = activePinToken;
+      }
+      if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+      options.headers = headers;
+
+      const res = await fetch(url, options);
+      const data = await res.json();
+      if (res.status === 401 || data.auth_required) {
+        document.getElementById('pin-modal').classList.remove('hidden');
+        throw new Error('Authentification PIN requise');
+      }
+      return data;
+    }
+
+    function showToast(msg, isError = false) {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = `px-4 py-3 rounded-2xl font-black text-xs uppercase tracking-wider shadow-2xl border flex items-center justify-between transition-all ${
+        isError
+          ? 'bg-rose-950/95 border-rose-500 text-rose-200'
+          : 'bg-[#111827]/95 border-[#FFD700] text-[#FFD700]'
+      }`;
+      el.innerHTML = `<span>${escapeHtml(msg)}</span><span>✦</span>`;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 2800);
+    }
+
+    // ----------------------------------------------------------------------
+    // 2. NAVIGATION ENTRE LES ONGLETS
+    // ----------------------------------------------------------------------
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = 'nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-slate-400';
+      });
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      if (activeBtn) {
+        activeBtn.className = 'nav-btn py-2 rounded-xl flex flex-col items-center justify-center text-[#FFD700] bg-[#0B0F17] border border-[#FFD700]/40';
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 3. PILOTAGE DU MODE TV EN 1 CLIC & SYNCHRONISATION FFF
+    // ----------------------------------------------------------------------
+    async function setTvMode(mode) {
+      try {
+        const data = await apiCall('/api/admin/mode', {
+          method: 'POST',
+          body: JSON.stringify({ display_mode: mode })
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          const labels = {
+            competitions: '🏆 Mode Classements activé sur la TV !',
+            buvette: '🍺 Carte de la Buvette affichée sur la TV !',
+            mixed: '🔄 Mode Rotation Mixte activé sur la TV !'
+          };
+          showToast(labels[mode] || 'Mode TV mis à jour');
+        }
+      } catch (e) {
+        showToast(e.message, true);
+      }
+    }
+
+    async function saveTvTimings() {
+      try {
+        const payload = {
+          team_rotation_seconds: parseInt(document.getElementById('inp-team-rot').value, 10) || 15,
+          mixed_competitions_seconds: parseInt(document.getElementById('inp-mixed-comp').value, 10) || 120,
+          mixed_buvette_seconds: parseInt(document.getElementById('inp-mixed-buv').value, 10) || 45
+        };
+        const data = await apiCall('/api/admin/mode', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('⚙️ Réglages TV mis à jour en direct');
+        }
+      } catch (e) {
+        showToast(e.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // MODALE QR CODE PLEIN ÉCRAN (4G INTERNET + WI-FI LOCAL) & PARTAGE WHATSAPP
+    // ----------------------------------------------------------------------
+    let currentModalQrMode = 'remote';
+
+    function openQrModal(mode = 'remote') {
+      const m = document.getElementById('qr-fullscreen-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      switchQrModalMode(mode);
+    }
+
+    function switchQrModalMode(mode) {
+      currentModalQrMode = mode;
+      const rt = appState.remote_tunnel || {};
+      const btnRemote = document.getElementById('btn-modal-tab-remote');
+      const btnLocal = document.getElementById('btn-modal-tab-local');
+      const imgEl = document.getElementById('modal-qr-img');
+      const labelEl = document.getElementById('modal-qr-label');
+      const urlEl = document.getElementById('modal-qr-url');
+
+      if (mode === 'local') {
+        btnLocal.className = 'py-2 rounded-xl font-black text-xs uppercase tracking-wider bg-[#FFD700] text-[#0B0F17]';
+        btnRemote.className = 'py-2 rounded-xl font-black text-xs uppercase tracking-wider text-slate-300';
+        imgEl.src = appState.qr_code_b64 || '';
+        labelEl.textContent = '📶 Accès Wi-Fi Local (Secours Club-House)';
+        labelEl.className = 'text-[11px] font-bold uppercase text-[#FFD700]';
+        urlEl.textContent = appState.admin_url || window.location.origin + '/admin';
+      } else {
+        btnRemote.className = 'py-2 rounded-xl font-black text-xs uppercase tracking-wider bg-emerald-500 text-[#0B0F17]';
+        btnLocal.className = 'py-2 rounded-xl font-black text-xs uppercase tracking-wider text-slate-300';
+        imgEl.src = rt.qr_remote_b64 || appState.qr_code_b64 || '';
+        labelEl.textContent = '🌐 Accès 4G / Partout sur Internet';
+        labelEl.className = 'text-[11px] font-bold uppercase text-emerald-400';
+        urlEl.textContent = rt.public_admin_url || rt.ntfy_url || appState.admin_url || '';
+      }
+    }
+
+    function closeQrModal() {
+      const m = document.getElementById('qr-fullscreen-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    async function copyTextToClipboard(text, label = 'Lien copié !') {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(`📋 ${label}`);
+      } catch (e) {
+        const tmp = document.createElement('input');
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        tmp.remove();
+        showToast(`📋 ${label}`);
+      }
+    }
+
+    async function copyAdminUrl() {
+      const url = appState.admin_url || window.location.origin + '/admin';
+      await copyTextToClipboard(url, 'Adresse Wi-Fi locale copiée !');
+    }
+
+    async function copyRemoteUrl() {
+      const rt = appState.remote_tunnel || {};
+      const url = rt.public_admin_url || rt.ntfy_url || appState.admin_url || window.location.origin + '/admin';
+      await copyTextToClipboard(url, 'Lien 4G / Internet copié !');
+    }
+
+    async function shareAdminAccess() {
+      const rt = appState.remote_tunnel || {};
+      const localUrl = appState.admin_url || window.location.origin + '/admin';
+      const remoteUrl = rt.public_admin_url || '';
+      const ntfyUrl = rt.ntfy_url || '';
+      const pin = activePinToken || '1969';
+
+      let shareText = `💛🖤 AS Durlinsdorf (1969) — Télécommande Affichage TV :\n`;
+      if (remoteUrl) {
+        shareText += `\n🌐 Accès 4G / Partout (Internet) :\n${remoteUrl}\n`;
+      }
+      if (ntfyUrl) {
+        shareText += `\n📌 Canal fixe permanent (si redémarrage électrique) :\n${ntfyUrl}\n`;
+      }
+      shareText += `\n📶 Accès Wi-Fi Local (Secours Club-House) :\n${localUrl}\n\n🔐 Code PIN : ${pin}`;
+
+      const primaryShareUrl = remoteUrl || ntfyUrl || localUrl;
+
+      if (navigator.share) {
+        try {
+          const res = await fetch('/api/qrcode.png?target=remote');
+          const blob = await res.blob();
+          const file = new File([blob], 'qrcode_4g_admin_as_durlinsdorf.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'AS Durlinsdorf - Télécommande TV (4G & Wi-Fi)',
+              text: shareText,
+              url: primaryShareUrl,
+              files: [file]
+            });
+            return;
+          }
+        } catch (err) {
+          // Repli sur partage texte + URL
+        }
+        try {
+          await navigator.share({
+            title: 'AS Durlinsdorf - Télécommande TV (4G & Wi-Fi)',
+            text: shareText,
+            url: primaryShareUrl
+          });
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+        }
+      }
+
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    async function saveRemoteConfig(e) {
+      e.preventDefault();
+      try {
+        const payload = {
+          ntfy_topic: document.getElementById('cfg-ntfy-topic').value.trim(),
+          custom_remote_domain: document.getElementById('cfg-custom-domain').value.trim(),
+          cloudflare_tunnel_token: document.getElementById('cfg-cf-token').value.trim(),
+          ngrok_authtoken: document.getElementById('cfg-ngrok-token').value.trim()
+        };
+        const data = await apiCall('/api/admin/remote-config', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('🌐 Configuration d’accès distant enregistrée !');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function sendNtfyNotification() {
+      try {
+        const data = await apiCall('/api/admin/remote-config/notify', {
+          method: 'POST',
+          body: JSON.stringify({})
+        });
+        if (data.ok) {
+          showToast('🔔 Lien 4G envoyé sur le canal ntfy.sh !');
+        } else {
+          showToast(data.error || 'Erreur envoi ntfy.sh', true);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function forceFffSync() {
+      const btn = document.getElementById('btn-sync-fff');
+      const label = document.getElementById('sync-label');
+      const icon = document.getElementById('sync-icon');
+      label.textContent = 'Sync...';
+      icon.classList.add('animate-spin');
+      btn.disabled = true;
+
+      try {
+        const data = await apiCall('/api/admin/fff/sync', {
+          method: 'POST',
+          body: JSON.stringify({ force_manual: false })
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast(`✅ Sync FFF terminée (${data.report.synced_count} équipes à jour)`);
+        }
+      } catch (e) {
+        showToast('Erreur lors de la synchronisation FFF', true);
+      } finally {
+        label.textContent = 'Sync FFF';
+        icon.classList.remove('animate-spin');
+        btn.disabled = false;
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 4. GESTION DE L'ÉVÉNEMENT À LA UNE
+    // ----------------------------------------------------------------------
+    async function saveFeaturedEvent(e) {
+      e.preventDefault();
+      try {
+        const fd = new FormData();
+        fd.append('badge', document.getElementById('ev-badge').value);
+        fd.append('title', document.getElementById('ev-title').value);
+        fd.append('subtitle', document.getElementById('ev-subtitle').value);
+        fd.append('price', document.getElementById('ev-price').value);
+        fd.append('highlight_price', document.getElementById('ev-price').value);
+        fd.append('description', document.getElementById('ev-desc').value);
+
+        const fileInput = document.getElementById('ev-file');
+        if (fileInput.files && fileInput.files[0]) {
+          fd.append('image_file', fileInput.files[0]);
+        }
+
+        const data = await apiCall('/api/admin/event', {
+          method: 'POST',
+          body: fd
+        });
+        if (data.ok) {
+          appState = data.state;
+          fileInput.value = '';
+          renderAdminAll();
+          showToast('🔥 Événement à la une mis à jour !');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 4b. GESTION DU LOGO DU CLUB (UPLOAD PERSONNALISÉ OU BLASON FFF)
+    // ----------------------------------------------------------------------
+    async function uploadClubLogo(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('club-logo-file');
+      if (!fileInput.files || !fileInput.files[0]) {
+        showToast('Sélectionnez une image (.png, .jpg, .svg, .webp)', true);
+        return;
+      }
+      try {
+        const fd = new FormData();
+        fd.append('logo_file', fileInput.files[0]);
+        const data = await apiCall('/api/admin/logo', {
+          method: 'POST',
+          body: fd
+        });
+        if (data.ok) {
+          appState = data.state;
+          fileInput.value = '';
+          renderAdminAll();
+          showToast('🛡️ Logo du club mis à jour partout !');
+        } else {
+          showToast(data.error || 'Erreur lors du changement de logo', true);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function restoreFffLogo() {
+      try {
+        const data = await apiCall('/api/admin/logo/fff', {
+          method: 'POST',
+          body: JSON.stringify({})
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('🛡️ Blason officiel FFF restauré !');
+        } else {
+          showToast(data.error || 'Impossible de récupérer le blason FFF', true);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function forceTvReload() {
+      try {
+        const data = await apiCall('/api/admin/reload-tv', {
+          method: 'POST',
+          body: JSON.stringify({})
+        });
+        if (data.ok) {
+          appState = data.state;
+          showToast('🔄 Rechargement de l\'écran TV envoyé !');
+        } else {
+          showToast(data.error || 'Erreur lors du rechargement TV', true);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 5. GESTION DE LA BUVETTE
+    // ----------------------------------------------------------------------
+    function resetBuvetteForm() {
+      document.getElementById('buv-id').value = '';
+      document.getElementById('buv-name').value = '';
+      document.getElementById('buv-format').value = '';
+      document.getElementById('buv-price').value = '';
+      document.getElementById('buv-avail').checked = true;
+      document.getElementById('buv-new').checked = false;
+      document.getElementById('buv-form-title').textContent = '➕ Ajouter un article à la Buvette';
+    }
+
+    function editBuvetteItem(itemId) {
+      const item = (appState.buvette_items || []).find(i => i.id === itemId);
+      if (!item) return;
+      document.getElementById('buv-id').value = item.id;
+      document.getElementById('buv-name').value = item.name;
+      document.getElementById('buv-cat').value = item.category;
+      document.getElementById('buv-format').value = item.format || '';
+      document.getElementById('buv-price').value = Number(item.price || 0).toFixed(2);
+      document.getElementById('buv-avail').checked = item.available !== false;
+      document.getElementById('buv-new').checked = Boolean(item.is_new);
+      document.getElementById('buv-form-title').textContent = `✏️ Modifier : ${item.name}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function saveBuvetteItem(e) {
+      e.preventDefault();
+      try {
+        const payload = {
+          id: document.getElementById('buv-id').value,
+          name: document.getElementById('buv-name').value,
+          category: document.getElementById('buv-cat').value,
+          format: document.getElementById('buv-format').value,
+          price: parseFloat(document.getElementById('buv-price').value),
+          available: document.getElementById('buv-avail').checked,
+          is_new: document.getElementById('buv-new').checked
+        };
+        const data = await apiCall('/api/admin/buvette/item', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (data.ok) {
+          appState = data.state;
+          resetBuvetteForm();
+          renderAdminAll();
+          showToast('🍺 Carte de la buvette mise à jour !');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function toggleBuvetteField(itemId, field) {
+      try {
+        const data = await apiCall('/api/admin/buvette/toggle', {
+          method: 'POST',
+          body: JSON.stringify({ id: itemId, field })
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('Statut article mis à jour sur la TV');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function deleteBuvetteItem(itemId) {
+      try {
+        const data = await apiCall(`/api/admin/buvette/item/${itemId}`, { method: 'DELETE' });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('🗑️ Article supprimé');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 6. GESTION DU BANDEAU DÉFILANT (TICKER)
+    // ----------------------------------------------------------------------
+    function insertEmoji(em) {
+      const inp = document.getElementById('new-ticker-text');
+      inp.value += em;
+      inp.focus();
+    }
+
+    async function saveTickerSpeed(val) {
+      try {
+        const data = await apiCall('/api/admin/ticker', {
+          method: 'POST',
+          body: JSON.stringify({ ticker_speed_seconds: parseInt(val, 10) })
+        });
+        if (data.ok) {
+          appState = data.state;
+          showToast('⏱️ Vitesse du bandeau mise à jour');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function addTickerMessage(e) {
+      e.preventDefault();
+      const inp = document.getElementById('new-ticker-text');
+      if (!inp.value.trim()) return;
+      try {
+        const data = await apiCall('/api/admin/ticker', {
+          method: 'POST',
+          body: JSON.stringify({ text: inp.value.trim(), active: true })
+        });
+        if (data.ok) {
+          inp.value = '';
+          appState = data.state;
+          renderAdminAll();
+          showToast('📢 Message ajouté à la bannière !');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function toggleTickerMessage(msgId, currentActive) {
+      try {
+        const data = await apiCall('/api/admin/ticker', {
+          method: 'POST',
+          body: JSON.stringify({ id: msgId, active: !currentActive })
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('Bannière mise à jour');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function deleteTickerMessage(msgId) {
+      try {
+        const data = await apiCall(`/api/admin/ticker/${msgId}`, { method: 'DELETE' });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('🗑️ Message supprimé');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 7. GESTION DES SPONSORS (UPLOAD DEPUIS LA GALERIE DU SMARTPHONE)
+    // ----------------------------------------------------------------------
+    async function saveSponsor(e) {
+      e.preventDefault();
+      try {
+        const fd = new FormData();
+        fd.append('name', document.getElementById('sp-name').value);
+        fd.append('tagline', document.getElementById('sp-tagline').value);
+        fd.append('duration_seconds', document.getElementById('sp-duration').value);
+        fd.append('active', 'true');
+
+        const fileInput = document.getElementById('sp-file');
+        if (fileInput.files && fileInput.files[0]) {
+          fd.append('logo_file', fileInput.files[0]);
+        }
+
+        const data = await apiCall('/api/admin/sponsors', {
+          method: 'POST',
+          body: fd
+        });
+        if (data.ok) {
+          document.getElementById('sp-name').value = '';
+          document.getElementById('sp-tagline').value = '';
+          fileInput.value = '';
+          appState = data.state;
+          renderAdminAll();
+          showToast('🤝 Sponsor ajouté au carrousel !');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function toggleSponsor(spId, currentActive) {
+      try {
+        const data = await apiCall('/api/admin/sponsors', {
+          method: 'POST',
+          body: JSON.stringify({ id: spId, active: !currentActive })
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('Statut du sponsor mis à jour');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function deleteSponsor(spId) {
+      try {
+        const data = await apiCall(`/api/admin/sponsors/${spId}`, { method: 'DELETE' });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast('🗑️ Sponsor supprimé');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 8. GESTION DES ÉQUIPES FFF & ÉDITION MANUELLE DES SCORES
+    // ----------------------------------------------------------------------
+    async function toggleTeamVisibility(teamId, isChecked) {
+      try {
+        const data = await apiCall('/api/admin/teams/toggle', {
+          method: 'POST',
+          body: JSON.stringify({ id: teamId, active: Boolean(isChecked) })
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast(isChecked ? '☑️ Équipe activée sur la TV' : '⬜ Équipe masquée sur la TV');
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function saveTeamManual(teamId) {
+      const team = (appState.teams || []).find(t => t.id === teamId);
+      if (!team) return;
+
+      const payload = {
+        id: teamId,
+        name: document.getElementById(`tm-name-${teamId}`).value,
+        competition: document.getElementById(`tm-comp-${teamId}`).value,
+        fff_cp_no: document.getElementById(`tm-cp-${teamId}`).value,
+        fff_po_no: document.getElementById(`tm-po-${teamId}`).value,
+        fff_url: document.getElementById(`tm-url-${teamId}`).value,
+        active: document.getElementById(`tm-active-${teamId}`).checked,
+        manual_override: document.getElementById(`tm-manual-${teamId}`).checked,
+        last_match: {
+          home_team: document.getElementById(`tm-lm-home-${teamId}`).value,
+          away_team: document.getElementById(`tm-lm-away-${teamId}`).value,
+          home_score: document.getElementById(`tm-lm-hs-${teamId}`).value,
+          away_score: document.getElementById(`tm-lm-as-${teamId}`).value,
+          date: document.getElementById(`tm-lm-date-${teamId}`).value,
+          time: team.last_match?.time || '15:00',
+          venue: document.getElementById(`tm-lm-venue-${teamId}`).value,
+          competition: document.getElementById(`tm-comp-${teamId}`).value
+        },
+        next_match: {
+          home_team: document.getElementById(`tm-nm-home-${teamId}`).value,
+          away_team: document.getElementById(`tm-nm-away-${teamId}`).value,
+          date: document.getElementById(`tm-nm-date-${teamId}`).value,
+          time: document.getElementById(`tm-nm-time-${teamId}`).value,
+          venue: document.getElementById(`tm-nm-venue-${teamId}`).value,
+          competition: document.getElementById(`tm-comp-${teamId}`).value
+        }
+      };
+
+      try {
+        const data = await apiCall('/api/admin/teams', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (data.ok) {
+          appState = data.state;
+          renderAdminAll();
+          showToast(`⚽ ${payload.name} mis à jour sur la TV !`);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 9. CHANGEMENT DU CODE PIN
+    // ----------------------------------------------------------------------
+    async function changeAdminPin(e) {
+      e.preventDefault();
+      const newPin = document.getElementById('inp-new-pin').value.trim();
+      try {
+        const data = await apiCall('/api/admin/pin', {
+          method: 'POST',
+          body: JSON.stringify({ new_pin: newPin })
+        });
+        if (data.ok) {
+          activePinToken = newPin;
+          sessionStorage.setItem('asd_admin_pin', newPin);
+          document.getElementById('inp-new-pin').value = '';
+          showToast('🔐 Nouveau code PIN enregistré !');
+        } else {
+          showToast(data.error || 'Code PIN invalide', true);
+        }
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // 10. RENDU GLOBAL DE L'INTERFACE D'ADMINISTRATION
+    // ----------------------------------------------------------------------
+    function renderAdminAll() {
+      const settings = appState.settings || {};
+      const activeMode = settings.display_mode || 'competitions';
+
+      // 1. Boutons de mode TV
+      ['competitions', 'buvette', 'mixed'].forEach(m => {
+        const btn = document.getElementById(`btn-mode-${m}`);
+        if (!btn) return;
+        if (m === activeMode) {
+          btn.className = 'py-3 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-2 bg-[#FFD700] text-[#0B0F17] border-[#FFD700] shadow-[0_0_15px_rgba(255,215,0,0.4)] transition';
+        } else {
+          btn.className = 'py-3 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 border-2 bg-[#0B0F17] text-slate-300 border-slate-700 transition';
+        }
+      });
+
+      // 2. Paramètres TV & QR Code Admin
+      document.getElementById('inp-team-rot').value = settings.team_rotation_seconds || 15;
+      document.getElementById('inp-mixed-comp').value = settings.mixed_competitions_seconds || 120;
+      document.getElementById('inp-mixed-buv').value = settings.mixed_buvette_seconds || 45;
+      document.getElementById('last-sync-badge').textContent = settings.last_fff_sync
+        ? `Dernière Sync FFF : ${settings.last_fff_sync}`
+        : '';
+
+      if (appState.admin_url) {
+        const secUrl = document.getElementById('sec-admin-url');
+        if (secUrl) secUrl.textContent = appState.admin_url;
+      }
+      if (appState.qr_code_b64) {
+        const secQr = document.getElementById('sec-qr-img');
+        if (secQr) secQr.src = appState.qr_code_b64;
+      }
+
+      // Mise à jour des infos Tunnel 4G / Internet & Canal ntfy.sh
+      const rt = appState.remote_tunnel || {};
+      const secRemoteQr = document.getElementById('sec-qr-remote-img');
+      if (secRemoteQr && (rt.qr_remote_b64 || appState.qr_code_b64)) {
+        secRemoteQr.src = rt.qr_remote_b64 || appState.qr_code_b64;
+      }
+      const secRemoteUrl = document.getElementById('sec-remote-url');
+      if (secRemoteUrl) {
+        if (rt.public_admin_url) {
+          secRemoteUrl.textContent = rt.public_admin_url;
+          secRemoteUrl.href = rt.public_admin_url;
+        } else {
+          secRemoteUrl.textContent = 'Connexion au tunnel HTTPS Cloudflare en cours...';
+          secRemoteUrl.href = '#';
+        }
+      }
+      const secNtfyUrl = document.getElementById('sec-ntfy-url');
+      if (secNtfyUrl && rt.ntfy_url) {
+        secNtfyUrl.textContent = rt.ntfy_url;
+        secNtfyUrl.href = rt.ntfy_url;
+      }
+      const inpNtfy = document.getElementById('cfg-ntfy-topic');
+      if (inpNtfy && document.activeElement !== inpNtfy) {
+        inpNtfy.value = rt.ntfy_topic || settings.ntfy_topic || '';
+      }
+      const inpDom = document.getElementById('cfg-custom-domain');
+      if (inpDom && document.activeElement !== inpDom) {
+        inpDom.value = rt.custom_remote_domain || settings.custom_remote_domain || '';
+      }
+      const inpCfTok = document.getElementById('cfg-cf-token');
+      if (inpCfTok && document.activeElement !== inpCfTok && settings.has_cloudflare_token) {
+        inpCfTok.value = '********';
+      }
+      const inpNgTok = document.getElementById('cfg-ngrok-token');
+      if (inpNgTok && document.activeElement !== inpNgTok && settings.has_ngrok_token) {
+        inpNgTok.value = '********';
+      }
+
+      // Rafraîchit aussi la modale QR si elle est ouverte
+      switchQrModalMode(currentModalQrMode);
+
+      if (appState.club_logo_url) {
+        ['pin-club-logo', 'admin-header-logo', 'admin-preview-logo'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.src = appState.club_logo_url;
+        });
+      }
+
+      // 3. Événement à la une
+      const ev = appState.featured_event || {};
+      document.getElementById('ev-badge').value = ev.badge || '';
+      document.getElementById('ev-title').value = ev.title || '';
+      document.getElementById('ev-subtitle').value = ev.subtitle || '';
+      document.getElementById('ev-price').value = ev.highlight_price || '';
+      document.getElementById('ev-desc').value = ev.description || '';
+
+      // 4. Catégories & Articles Buvette
+      const cats = appState.buvette_categories || ['Boissons fraîches', 'Bières & Vins', 'Restauration / Petite faim', 'Café & Desserts'];
+      const catSelect = document.getElementById('buv-cat');
+      catSelect.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+      const filterEl = document.getElementById('buvette-cat-filters');
+      filterEl.innerHTML = ['ALL', ...cats].map(c => {
+        const active = selectedBuvetteCategory === c;
+        return `
+          <button type="button" onclick="selectedBuvetteCategory='${escapeHtml(c)}'; renderAdminAll();"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider shrink-0 border ${
+              active ? 'bg-[#FFD700] text-[#0B0F17] border-[#FFD700]' : 'bg-[#111827] text-slate-300 border-slate-700'
+            }">
+            ${c === 'ALL' ? 'Tous les articles' : escapeHtml(c)}
+          </button>
+        `;
+      }).join('');
+
+      const buvListEl = document.getElementById('buvette-admin-list');
+      const items = (appState.buvette_items || []).filter(
+        i => selectedBuvetteCategory === 'ALL' || i.category === selectedBuvetteCategory
+      );
+
+      buvListEl.innerHTML = items.map(item => {
+        const isAvail = item.available !== false;
+        const isNew = Boolean(item.is_new);
+        const priceFormatted = Number(item.price || 0).toFixed(2).replace('.', ',') + ' €';
+
+        return `
+          <div class="bg-[#111827] border ${isAvail ? 'border-slate-800' : 'border-rose-500/50'} rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-extrabold text-base ${isAvail ? 'text-white' : 'line-through text-slate-400'}">${escapeHtml(item.name)}</span>
+                ${item.format ? `<span class="px-2 py-0.5 rounded bg-[#0B0F17] text-xs font-bold text-slate-300">${escapeHtml(item.format)}</span>` : ''}
+                <span class="font-black text-base text-[#FFD700]">${priceFormatted}</span>
+              </div>
+              <div class="text-[11px] font-semibold text-slate-400 mt-0.5">${escapeHtml(item.category)}</div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="toggleBuvetteField('${item.id}', 'available')"
+                class="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider ${
+                  isAvail
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-rose-600 text-white'
+                }">
+                ${isAvail ? '✓ En stock' : '✗ En Rupture'}
+              </button>
+
+              <button type="button" onclick="toggleBuvetteField('${item.id}', 'is_new')"
+                class="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider ${
+                  isNew
+                    ? 'bg-[#FFD700] text-[#0B0F17]'
+                    : 'bg-[#0B0F17] text-slate-400 border border-slate-700'
+                }">
+                ★ Nouveau
+              </button>
+
+              <button type="button" onclick="editBuvetteItem('${item.id}')"
+                class="px-3 py-2 rounded-xl bg-[#0B0F17] border border-slate-700 text-xs font-bold text-white">
+                ✏️
+              </button>
+
+              <button type="button" onclick="deleteBuvetteItem('${item.id}')"
+                class="px-3 py-2 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs font-bold text-rose-300">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 5. Bandeau Défilant (Ticker)
+      const speedSec = settings.ticker_speed_seconds || 38;
+      document.getElementById('inp-ticker-speed').value = speedSec;
+      document.getElementById('ticker-speed-val').textContent = `${speedSec} sec`;
+
+      const tickerListEl = document.getElementById('ticker-admin-list');
+      tickerListEl.innerHTML = (appState.ticker_messages || []).map(m => `
+        <div class="bg-[#111827] border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+          <p class="text-sm font-bold ${m.active ? 'text-white' : 'line-through text-slate-500'} flex-1">
+            ${escapeHtml(m.text)}
+          </p>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="toggleTickerMessage('${m.id}', ${Boolean(m.active)})"
+              class="px-3 py-2 rounded-xl text-xs font-black uppercase ${
+                m.active ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'
+              }">
+              ${m.active ? 'Actif' : 'Masqué'}
+            </button>
+            <button type="button" onclick="deleteTickerMessage('${m.id}')"
+              class="px-3 py-2 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs text-rose-300">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // 6. Sponsors
+      const spListEl = document.getElementById('sponsors-admin-list');
+      spListEl.innerHTML = (appState.sponsors || []).map(sp => `
+        <div class="bg-[#111827] border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <img src="${escapeHtml(sp.logo_url)}" alt="${escapeHtml(sp.name)}" class="w-16 h-12 object-contain bg-[#0B0F17] rounded-xl p-1 border border-slate-800 shrink-0" />
+            <div class="min-w-0">
+              <div class="font-black text-sm text-white truncate">${escapeHtml(sp.name)}</div>
+              <div class="text-xs text-[#FFD700] truncate">${escapeHtml(sp.tagline || '')}</div>
+              <div class="text-[11px] text-slate-400">Affichage : ${sp.duration_seconds || 8}s</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="toggleSponsor('${sp.id}', ${sp.active !== false})"
+              class="px-3 py-2 rounded-xl text-xs font-black uppercase ${
+                sp.active !== false ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'
+              }">
+              ${sp.active !== false ? 'Actif' : 'Off'}
+            </button>
+            <button type="button" onclick="deleteSponsor('${sp.id}')"
+              class="px-3 py-2 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs text-rose-300">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // 7. Équipes FFF (Checklists rapides + Cartes détaillées)
+      const allTeams = appState.teams || [];
+      const activeTeamsCount = allTeams.filter(t => t.active !== false).length;
+      const countBadge = document.getElementById('active-teams-count');
+      if (countBadge) {
+        countBadge.textContent = `${activeTeamsCount} / ${allTeams.length} actives`;
+      }
+
+      const checklistHtml = allTeams.map(t => {
+        const checked = t.active !== false;
+        return `
+          <label class="flex items-center justify-between gap-3 p-3 rounded-xl border cursor-pointer transition ${
+            checked
+              ? 'bg-[#0B0F17] border-[#FFD700] text-white shadow-sm'
+              : 'bg-[#0B0F17]/50 border-slate-800 text-slate-400 opacity-75'
+          }">
+            <div class="min-w-0">
+              <div class="font-black text-sm ${checked ? 'text-[#FFD700]' : 'text-slate-400'} truncate">
+                ${escapeHtml(t.name)}
+              </div>
+              <div class="text-[11px] text-slate-400 truncate">
+                ${escapeHtml(t.competition || '')} (${(t.standings || []).length} clubs)
+              </div>
+            </div>
+            <input type="checkbox" ${checked ? 'checked' : ''}
+              onchange="toggleTeamVisibility('${t.id}', this.checked)"
+              class="w-6 h-6 accent-[#FFD700] rounded shrink-0 cursor-pointer" />
+          </label>
+        `;
+      }).join('');
+
+      const quickChecklistEl = document.getElementById('quick-teams-checklist');
+      if (quickChecklistEl) quickChecklistEl.innerHTML = checklistHtml;
+      const teamsTabChecklistEl = document.getElementById('teams-tab-checklist');
+      if (teamsTabChecklistEl) teamsTabChecklistEl.innerHTML = checklistHtml;
+
+      const teamsListEl = document.getElementById('teams-admin-list');
+      teamsListEl.innerHTML = allTeams.map(t => {
+        const lm = t.last_match || {};
+        const nm = t.next_match || {};
+        return `
+          <div class="bg-[#111827] border ${t.active !== false ? 'border-slate-700' : 'border-slate-800 opacity-75'} rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <h3 class="font-black text-base text-[#FFD700] uppercase">${escapeHtml(t.name)}</h3>
+                <p class="text-xs text-slate-400">${escapeHtml(t.competition || '')} • ${(t.standings || []).length} équipes classées (cp_no: ${escapeHtml(t.fff_cp_no || '-')}, po_no: ${escapeHtml(t.fff_po_no || '-')})</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                  <input type="checkbox" id="tm-active-${t.id}" ${t.active !== false ? 'checked' : ''}
+                    onchange="toggleTeamVisibility('${t.id}', this.checked)"
+                    class="w-5 h-5 accent-[#FFD700]" />
+                  <span>Afficher TV</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs font-bold text-amber-300 cursor-pointer">
+                  <input type="checkbox" id="tm-manual-${t.id}" ${t.manual_override ? 'checked' : ''} class="w-4 h-4 accent-amber-400" />
+                  <span>Mode Manuel</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400">Nom de l'équipe</label>
+                <input type="text" id="tm-name-${t.id}" value="${escapeHtml(t.name)}" class="w-full bg-[#0B0F17] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400">Compétition / Poule officielle FFF</label>
+                <input type="text" id="tm-comp-${t.id}" value="${escapeHtml(t.competition || '')}" class="w-full bg-[#0B0F17] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-[#FFD700]" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400">ID Compétition (cp_no)</label>
+                  <input type="text" id="tm-cp-${t.id}" value="${escapeHtml(t.fff_cp_no || '')}" class="w-full bg-[#0B0F17] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-mono" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400">N° Poule (po_no)</label>
+                  <input type="text" id="tm-po-${t.id}" value="${escapeHtml(t.fff_po_no || '')}" class="w-full bg-[#0B0F17] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-mono" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400">URL Officielle FFF</label>
+                <input type="text" id="tm-url-${t.id}" value="${escapeHtml(t.fff_url || '')}" class="w-full bg-[#0B0F17] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-mono" />
+              </div>
+            </div>
+
+            <!-- Édition Dernier Résultat -->
+            <div class="bg-[#0B0F17] p-3 rounded-xl border border-slate-800 space-y-2">
+              <div class="text-xs font-black uppercase text-emerald-400">Dernier Résultat Joué (Correction / Saisie manuelle)</div>
+              <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-center">
+                <input type="text" id="tm-lm-home-${t.id}" value="${escapeHtml(lm.home_team || 'AS Durlinsdorf')}" placeholder="Équipe Dom." class="col-span-1 sm:col-span-2 bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" />
+                <input type="number" id="tm-lm-hs-${t.id}" value="${lm.home_score ?? ''}" placeholder="Buts Dom" class="bg-[#111827] border border-[#FFD700] rounded-lg px-2 py-1.5 text-sm font-black text-center text-[#FFD700]" />
+                <input type="number" id="tm-lm-as-${t.id}" value="${lm.away_score ?? ''}" placeholder="Buts Ext" class="bg-[#111827] border border-[#FFD700] rounded-lg px-2 py-1.5 text-sm font-black text-center text-[#FFD700]" />
+                <input type="text" id="tm-lm-away-${t.id}" value="${escapeHtml(lm.away_team || lm.opponent || '')}" placeholder="Équipe Ext." class="col-span-2 bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="tm-lm-date-${t.id}" value="${escapeHtml(lm.date || '')}" placeholder="Date (JJ/MM/AAAA)" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300" />
+                <select id="tm-lm-venue-${t.id}" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300">
+                  <option value="Domicile" ${(lm.venue || '').includes('Domicile') ? 'selected' : ''}>Domicile</option>
+                  <option value="Extérieur" ${(lm.venue || '').includes('Ext') ? 'selected' : ''}>Extérieur</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Édition Prochain Match -->
+            <div class="bg-[#0B0F17] p-3 rounded-xl border border-slate-800 space-y-2">
+              <div class="text-xs font-black uppercase text-[#FFD700]">Prochain Match Programmé</div>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <input type="text" id="tm-nm-home-${t.id}" value="${escapeHtml(nm.home_team || 'AS Durlinsdorf')}" placeholder="Domicile" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" />
+                <input type="text" id="tm-nm-away-${t.id}" value="${escapeHtml(nm.away_team || nm.opponent || '')}" placeholder="Extérieur" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" />
+                <input type="text" id="tm-nm-date-${t.id}" value="${escapeHtml(nm.date || '')}" placeholder="Date (ex: 25/10/2026)" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300" />
+                <input type="text" id="tm-nm-time-${t.id}" value="${escapeHtml(nm.time || '15:00')}" placeholder="Heure (15:00)" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-[#FFD700]" />
+                <select id="tm-nm-venue-${t.id}" class="bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300">
+                  <option value="Domicile" ${(nm.venue || '').includes('Domicile') ? 'selected' : ''}>Domicile</option>
+                  <option value="Extérieur" ${(nm.venue || '').includes('Ext') ? 'selected' : ''}>Extérieur</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="button" onclick="saveTeamManual('${t.id}')"
+              class="w-full py-2.5 rounded-xl bg-[#FFD700] text-[#0B0F17] font-black text-xs uppercase tracking-wider">
+              Enregistrer les modifications pour ${escapeHtml(t.name)}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    renderAdminAll();
+
+    // Synchronisation temps réel SSE pour recevoir automatiquement l'URL du tunnel Cloudflare
+    if (window.EventSource) {
+      const es = new EventSource('/api/stream');
+      es.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data && data.version && data.version !== appState.version) {
+            appState = data;
+            renderAdminAll();
+          }
+        } catch (err) {}
+      };
+    }
+  </script>
+</body>
+</html>

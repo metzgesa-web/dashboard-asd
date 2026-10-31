@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: as-durlinsdorf-tv-dashboard
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ASD_SECRET_KEY
+        generateValue: true
+      - key: TZ
+        value: Europe/Paris
