@@ -21,11 +21,13 @@ from __future__ import annotations
 from collections import deque
 import datetime
 import io
+import json
 import logging
 import os
 import socket
 import time
-from typing import Any, Dict, List, Optional, Tuple
+import urllib.parse
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import requests as std_requests
 import urllib3
@@ -56,6 +58,25 @@ ASD_AFFILIATION_NUMBER = 523732
 ASD_DEFAULT_CL_NO = 9029
 ASD_KEYWORDS = ("durlinsdorf", "a.s. durlinsdorf", "as durlinsdorf", "durlinsdorf a.s", "durlinsdorf epsud")
 
+# En-têtes HTTP complets imitant un navigateur français venant du site officiel epreuves.fff.fr
+FFF_BROWSER_HEADERS: Dict[str, str] = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/ld+json, application/json, text/plain, */*",
+    "Accept-Language": "fr-FR,fr;q=0.9",
+    "Referer": "https://epreuves.fff.fr/",
+    "Origin": "https://epreuves.fff.fr",
+}
+
+# Liste ordonnée des proxies de secours utilisés si l'appel direct à api-dofa.fff.fr échoue ou renvoie 403/429
+FFF_FALLBACK_PROXIES: Tuple[str, ...] = (
+    "https://api.codetabs.com/v1/proxy?quest=",
+    "https://api.allorigins.win/raw?url=",
+    "https://corsproxy.io/?",
+)
+
 
 def is_asd_team_name(name: str) -> bool:
     """Vérifie si le libellé d'équipe correspond à l'AS Durlinsdorf."""
@@ -73,29 +94,143 @@ class FFFScraper:
     afin de ne jamais surcharger l'API officielle de la FFF.
     """
 
-    def __init__(self, timeout: int = 12, cache_ttl: int = 900) -> None:
+    def __init__(
+        self,
+        timeout: int = 12,
+        cache_ttl: int = 900,
+        fallback_proxies: Optional[Sequence[str]] = None,
+        verbose: bool = False,
+    ) -> None:
         self.timeout = timeout
         self.cache_ttl = cache_ttl  # Durée de mise en cache mémoire par défaut : 15 min (900s)
+        self.fallback_proxies: Tuple[str, ...] = tuple(fallback_proxies or FFF_FALLBACK_PROXIES)
+        self.verbose = verbose
+        self.attempt_logs: List[str] = []
         self._api_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
+
+        # Session HTTP standard configurée avec les en-têtes complets de navigateur français
         self.std_session = std_requests.Session()
-        self.std_session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-            ),
-            "Accept": "application/ld+json, application/json",
-            "Origin": "https://epreuves.fff.fr",
-            "Referer": "https://epreuves.fff.fr/",
-        })
+        self.std_session.headers.update(FFF_BROWSER_HEADERS)
+
+        # Session curl_cffi (si disponible) avec les mêmes en-têtes complets
+        self.cffi_session = None
+        if HAS_CURL_CFFI and cffi_requests is not None:
+            try:
+                self.cffi_session = cffi_requests.Session(
+                    impersonate="chrome",
+                    headers=FFF_BROWSER_HEADERS,
+                    verify=False,
+                )
+            except Exception:
+                self.cffi_session = None
 
     def clear_cache(self) -> None:
         """Vide le cache mémoire HTTP (utilisé lors d'une synchronisation manuelle forcée)."""
         self._api_cache.clear()
+        self.attempt_logs.clear()
+
+    def _record_attempt(self, label: str, target_url: str, status_info: str) -> None:
+        """Journalise avec précision chaque tentative HTTP (méthode/source, URL complète, code HTTP)."""
+        entry = f"[{label}] GET {target_url} -> {status_info}"
+        self.attempt_logs.append(entry)
+        logger.info("%s", entry)
+        if self.verbose:
+            print(f"   [HTTP] {entry}")
+
+    @staticmethod
+    def _parse_json_payload(raw_text: str) -> Optional[Dict[str, Any]]:
+        """Extrait et valide le dictionnaire JSON renvoyé par l'API FFF ou un proxy de secours."""
+        if not raw_text or not raw_text.strip():
+            return None
+        try:
+            parsed = json.loads(raw_text)
+        except Exception:
+            return None
+        if not isinstance(parsed, dict):
+            return None
+        # Filtre les éventuelles réponses d'erreur JSON générées par un proxy tiers
+        if (
+            ("error" in parsed or "Error" in parsed)
+            and "@context" not in parsed
+            and "hydra:member" not in parsed
+            and "cl_no" not in parsed
+        ):
+            return None
+        return parsed
+
+    def _fetch_url_json(self, target_url: str, label: str) -> Tuple[Optional[Dict[str, Any]], int]:
+        """
+        Tente de récupérer le JSON sur `target_url` via la session HTTP configurée
+        et retourne `(payload_dict, last_http_status)`.
+        """
+        last_status = 0
+
+        # 1. Tentative avec la session HTTP standard (requests.Session + en-têtes FFF_BROWSER_HEADERS)
+        try:
+            resp = self.std_session.get(
+                target_url,
+                headers=FFF_BROWSER_HEADERS,
+                timeout=self.timeout,
+                verify=False,
+            )
+            last_status = resp.status_code
+            if resp.status_code == 200:
+                parsed = self._parse_json_payload(resp.text)
+                if parsed is not None:
+                    self._record_attempt(f"{label}/requests", target_url, f"HTTP {resp.status_code} (OK)")
+                    return parsed, resp.status_code
+                self._record_attempt(
+                    f"{label}/requests",
+                    target_url,
+                    f"HTTP {resp.status_code} (Réponse non-JSON invalide)",
+                )
+            else:
+                self._record_attempt(f"{label}/requests", target_url, f"HTTP {resp.status_code}")
+        except Exception as exc:
+            self._record_attempt(f"{label}/requests", target_url, f"ERREUR ({type(exc).__name__}: {exc})")
+
+        # 2. Tentative avec empreinte TLS navigateur via curl_cffi
+        if HAS_CURL_CFFI and cffi_requests is not None:
+            try:
+                if self.cffi_session is not None:
+                    resp = self.cffi_session.get(
+                        target_url,
+                        headers=FFF_BROWSER_HEADERS,
+                        timeout=self.timeout,
+                        verify=False,
+                    )
+                else:
+                    resp = cffi_requests.get(
+                        target_url,
+                        impersonate="chrome",
+                        headers=FFF_BROWSER_HEADERS,
+                        timeout=self.timeout,
+                        verify=False,
+                    )
+                last_status = resp.status_code
+                if resp.status_code == 200:
+                    parsed = self._parse_json_payload(resp.text)
+                    if parsed is not None:
+                        self._record_attempt(f"{label}/curl_cffi", target_url, f"HTTP {resp.status_code} (OK)")
+                        return parsed, resp.status_code
+                    self._record_attempt(
+                        f"{label}/curl_cffi",
+                        target_url,
+                        f"HTTP {resp.status_code} (Réponse non-JSON invalide)",
+                    )
+                else:
+                    self._record_attempt(f"{label}/curl_cffi", target_url, f"HTTP {resp.status_code}")
+            except Exception as exc:
+                self._record_attempt(f"{label}/curl_cffi", target_url, f"ERREUR ({type(exc).__name__}: {exc})")
+
+        return None, last_status
 
     def api_get(self, endpoint: str, use_cache: bool = True) -> Optional[Dict[str, Any]]:
         """
         Exécute une requête GET sur `https://api-dofa.fff.fr/api/<endpoint>`
         avec mise en cache mémoire (TTL) pour préserver l'API officielle FFF.
+        Si l'appel direct échoue ou renvoie HTTP 403/429 (ex: depuis GitHub Actions),
+        bascule automatiquement sur la liste de proxies de secours (`FFF_FALLBACK_PROXIES`).
         """
         clean_ep = endpoint.lstrip("/")
         now = time.time()
@@ -106,65 +241,76 @@ class FFFScraper:
                 return cached_payload
 
         url = f"{FFF_API_BASE}/{clean_ep}"
-        result: Optional[Dict[str, Any]] = None
 
-        # 1. Requête avec empreinte TLS navigateur via curl_cffi (évite le 403 Akamai FFF)
-        if HAS_CURL_CFFI and cffi_requests is not None:
-            try:
-                resp = cffi_requests.get(
+        # 1. Appel direct à https://api-dofa.fff.fr/api/...
+        result, direct_status = self._fetch_url_json(url, label="DIRECT")
+
+        # 2. Si l'appel direct échoue ou renvoie 403/429 (ou autre code != 200),
+        #    passage automatique par les proxies de secours configurés
+        if result is None:
+            if direct_status in (403, 429):
+                logger.warning(
+                    "Blocage pare-feu détecté (HTTP %d) sur %s -> Bascule sur les proxies de secours...",
+                    direct_status,
                     url,
-                    impersonate="chrome",
-                    headers={"Accept": "application/ld+json, application/json"},
-                    timeout=self.timeout,
-                    verify=False,
                 )
-                if resp.status_code == 200:
-                    result = resp.json()
-                else:
-                    logger.warning("API FFF %s -> HTTP %d", url, resp.status_code)
-            except Exception as exc:
-                logger.debug("Erreur curl_cffi sur %s : %s", url, exc)
+            for idx, proxy_prefix in enumerate(self.fallback_proxies, start=1):
+                proxy_label = f"PROXY-{idx}"
+                # Si l'URL cible contient des paramètres de requête (?page=1, ?nom=...),
+                # on teste l'URL encodée pour le paramètre du proxy puis l'URL brute si nécessaire
+                candidate_urls: List[str] = []
+                if "?" in url or "&" in url:
+                    candidate_urls.append(f"{proxy_prefix}{urllib.parse.quote(url, safe='')}")
+                candidate_urls.append(f"{proxy_prefix}{url}")
 
-        # 2. Repli sur requests standard
+                for proxy_url in candidate_urls:
+                    result, _ = self._fetch_url_json(proxy_url, label=proxy_label)
+                    if result is not None:
+                        break
+                if result is not None:
+                    break
+
+        # 3. Dernier repli sur la commande système curl si présente dans le conteneur Cloud
         if result is None:
             try:
-                resp = self.std_session.get(url, timeout=self.timeout, verify=False)
-                if resp.status_code == 200:
-                    result = resp.json()
-            except Exception as exc:
-                logger.debug("Erreur requests sur %s : %s", url, exc)
-
-        # 3. Repli sur la commande système curl si présente dans le conteneur Cloud
-        if result is None:
-            try:
-                import json as _json
                 import subprocess as _sp
 
                 proc = _sp.run(
                     [
                         "curl",
-                        "-fsSL",
+                        "-sSL",
                         "-k",
+                        "-w",
+                        "\n%{http_code}",
                         "--max-time",
                         str(self.timeout),
                         "-H",
-                        "Accept: application/ld+json, application/json",
+                        f"Accept: {FFF_BROWSER_HEADERS['Accept']}",
                         "-H",
-                        "Origin: https://epreuves.fff.fr",
+                        f"Accept-Language: {FFF_BROWSER_HEADERS['Accept-Language']}",
                         "-H",
-                        "Referer: https://epreuves.fff.fr/",
+                        f"Origin: {FFF_BROWSER_HEADERS['Origin']}",
+                        "-H",
+                        f"Referer: {FFF_BROWSER_HEADERS['Referer']}",
                         "-A",
-                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                        FFF_BROWSER_HEADERS["User-Agent"],
                         url,
                     ],
                     capture_output=True,
                     text=True,
                     timeout=self.timeout + 2,
                 )
-                if proc.returncode == 0 and proc.stdout.strip():
-                    result = _json.loads(proc.stdout)
+                lines = (proc.stdout or "").rstrip().splitlines()
+                http_code_str = lines[-1].strip() if lines else "0"
+                body_str = "\n".join(lines[:-1]) if len(lines) > 1 else ""
+                parsed = self._parse_json_payload(body_str) if http_code_str == "200" else None
+                if parsed is not None:
+                    self._record_attempt("DIRECT/curl-cli", url, f"HTTP {http_code_str} (OK)")
+                    result = parsed
+                else:
+                    self._record_attempt("DIRECT/curl-cli", url, f"HTTP {http_code_str}")
             except Exception as exc:
-                logger.debug("Erreur curl CLI sur %s : %s", url, exc)
+                self._record_attempt("DIRECT/curl-cli", url, f"ERREUR ({type(exc).__name__}: {exc})")
 
         if result is not None:
             self._api_cache[clean_ep] = (now, result)
@@ -635,6 +781,7 @@ class FFFScraper:
                 "synced_count": 0,
                 "cached_count": len(cached_valid),
                 "details": ["API FFF injoignable : conservation du cache réel local."],
+                "attempt_logs": list(self.attempt_logs),
             }
 
         all_matches = self.fetch_club_matches(cl_no)
@@ -763,6 +910,7 @@ class FFFScraper:
                     "synced_count": 0,
                     "cached_count": len(cached_valid),
                     "details": ["Aucun classement FFF récupéré : conservation du cache local valide."],
+                    "attempt_logs": list(self.attempt_logs),
                 }
 
         return {
@@ -773,6 +921,7 @@ class FFFScraper:
             "synced_count": len(synced_teams),
             "cached_count": 0,
             "details": details,
+            "attempt_logs": list(self.attempt_logs),
         }
 
 

@@ -17,12 +17,12 @@ from __future__ import annotations
 import json
 import os
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import requests
 import urllib3
 
-from fff_scraper import FFFScraper
+from fff_scraper import FFF_BROWSER_HEADERS, FFF_FALLBACK_PROXIES, FFFScraper
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -39,6 +39,25 @@ DB_PATH = os.path.join(BASE_DIR, "database.json")
 CLOUD_BASE_URL = os.environ.get("ASD_CLOUD_URL", "https://metzgesa.pythonanywhere.com").strip().rstrip("/")
 PUSH_ENDPOINT = f"{CLOUD_BASE_URL}/api/push-fff-cache"
 ADMIN_PIN = os.environ.get("ASD_ADMIN_PIN", "1969").strip()
+
+# En-têtes HTTP complets imitant un navigateur français venant du site officiel FFF
+BROWSER_HEADERS: Dict[str, str] = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/ld+json, application/json, text/plain, */*",
+    "Accept-Language": "fr-FR,fr;q=0.9",
+    "Referer": "https://epreuves.fff.fr/",
+    "Origin": "https://epreuves.fff.fr",
+}
+
+# Liste des proxies de secours utilisés automatiquement si l'appel direct à api-dofa.fff.fr échoue ou renvoie 403/429
+FALLBACK_PROXIES: Tuple[str, ...] = (
+    "https://api.codetabs.com/v1/proxy?quest=",
+    "https://api.allorigins.win/raw?url=",
+    "https://corsproxy.io/?",
+)
 
 
 def load_local_teams() -> List[Dict[str, Any]]:
@@ -79,17 +98,33 @@ def main() -> int:
     print("=" * 74)
 
     existing_teams = load_local_teams()
-    scraper = FFFScraper(timeout=15)
+    scraper = FFFScraper(
+        timeout=15,
+        fallback_proxies=FALLBACK_PROXIES,
+        verbose=True,
+    )
+    scraper.std_session.headers.update(BROWSER_HEADERS)
 
     print("\n1. Interrogation de l'API officielle FFF (https://api-dofa.fff.fr/api/)...")
+    print(f"   • En-têtes HTTP configurés : Origin={BROWSER_HEADERS['Origin']} | Accept-Language={BROWSER_HEADERS['Accept-Language']}")
+    print(f"   • Proxies de secours prêts : {', '.join(FALLBACK_PROXIES)}")
+    print("   • Détail des tentatives HTTP en direct :")
+
     report = scraper.sync_all_teams(existing_teams=existing_teams, force_manual=True)
+    attempt_logs: List[str] = report.get("attempt_logs") or scraper.attempt_logs
     valid_teams = [
         t for t in (report.get("teams") or [])
         if isinstance(t.get("standings"), list) and len(t["standings"]) > 0
     ]
 
+    print(f"\n   • Total des tentatives HTTP effectuées : {len(attempt_logs)}")
+
     if not valid_teams or report.get("status") != "online":
         print("ERREUR : Impossible de récupérer les classements officiels depuis l'API FFF.")
+        if attempt_logs:
+            print("Récapitulatif des tentatives HTTP :")
+            for entry in attempt_logs:
+                print(f"   - {entry}")
         return 1
 
     total_standings_rows = sum(len(t.get("standings", [])) for t in valid_teams)
@@ -136,8 +171,10 @@ def main() -> int:
         "X-Admin-Pin": ADMIN_PIN,
     }
 
+    cloud_session = requests.Session()
     try:
-        resp = requests.post(PUSH_ENDPOINT, json=payload, headers=headers, timeout=20, verify=False)
+        resp = cloud_session.post(PUSH_ENDPOINT, json=payload, headers=headers, timeout=20, verify=False)
+        print(f"   [HTTP] [CLOUD/POST] {PUSH_ENDPOINT} -> HTTP {resp.status_code}")
     except Exception as exc:
         print(f"ERREUR RÉSEAU lors de la connexion à {PUSH_ENDPOINT} : {exc}")
         return 1
